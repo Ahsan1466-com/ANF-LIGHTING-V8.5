@@ -1,0 +1,15 @@
+{
+  "name": "ANF LIGHTING",
+  "short_name": "ANF LIGHTING",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#0099ff",
+  "icons": [
+    {
+      "src": "https://uploads.onecompiler.io/44s6rbavp/44vvffqms/ChatGPT%20Image%201%20Agu%202026,%2007.57.31.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

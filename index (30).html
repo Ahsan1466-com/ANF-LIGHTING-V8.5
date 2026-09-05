@@ -1,0 +1,3626 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ANF LIGHTING V8.5 MODULAR RIGGING</title>
+
+  <meta name="theme-color" content="#ffcc00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ANF LIGHTING">
+
+  <style>
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background:#0a0a0f;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #app{display:flex;flex-direction:column;width:100%;height:100%;}
+    #stageWrap{flex:1;position:relative;min-height:220px;}
+    #stage3D{
+      display:block;
+      width:100%;
+      height:100%;
+    }
+    #watermark{
+      position:fixed;top:10px;right:15px;
+      background:rgba(10,10,16,0.9);
+      color:#ffcc00;
+      padding:6px 10px;
+      border-radius:4px;
+      font-size:11px;
+      font-weight:bold;
+      border:1px solid #ffcc00;
+      z-index:1000;
+      pointer-events:none;
+      letter-spacing: 1px;
+      box-shadow: 0 0 10px rgba(255,204,0,0.3);
+      text-shadow:0 0 5px rgba(255,204,0,0.5);
+    }
+    #selectionInfo{
+      position:absolute;top:10px;left:10px;background:rgba(10,10,16,0.9);color:#ffcc00;
+      padding:8px 12px;border-radius:4px;font-size:11px;pointer-events:none;
+      border:1px solid #ffcc00;display:none;z-index:1000;
+      box-shadow: 0 0 10px rgba(255,204,0,0.3);
+    }
+
+    #console{
+      position:relative;
+      background: #0f1015;
+      color:#e0e0e0;
+      padding:8px;
+      width:100%;
+      box-sizing:border-box;
+      z-index:999;
+      font-size:11px;
+      max-height:50vh;
+      overflow-x:hidden;
+      overflow-y:auto;
+      border-top:2px solid #ffcc00;
+      box-shadow:0 -5px 25px rgba(255,204,0,.2);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #161822;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid #2a2e3d;
+    }
+    .console-title {
+      font-weight: bold;
+      color: #ffcc00;
+      letter-spacing: 1.5px;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    .console-subtitle {
+      color: #ffcc00;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .top-quick-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #12141d;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #2a2e3d;
+    }
+
+    .scroll-row {
+      display: flex;
+      overflow-x: auto;
+      gap: 5px;
+      padding-bottom: 2px;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scroll-row::-webkit-scrollbar {
+      height: 3px;
+    }
+    .scroll-row::-webkit-scrollbar-thumb {
+      background: #ffcc00;
+      border-radius: 3px;
+    }
+
+    .anf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 8px;
+    }
+
+    .anf-panel {
+      background: #141620;
+      border: 1px solid #252938;
+      border-radius: 4px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .panel-title {
+      font-size: 9px;
+      font-weight: bold;
+      color: #ffcc00;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #252938;
+      padding-bottom: 3px;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    button {
+      margin: 0;
+      padding: 6px 10px;
+      background: #1f1b0a;
+      color: #ffcc00;
+      border: 1px solid #ffcc00;
+      border-radius: 3px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 10px;
+      transition: all 0.15s ease;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    button:hover {
+      background: #ffcc00;
+      color: #000;
+      border-color: #ffcc00;
+      box-shadow: 0 0 8px rgba(255,204,0,0.6);
+    }
+    button:active, button.active {
+      background: #ffffff;
+      color: #000;
+      border-color: #ffffff;
+      box-shadow: 0 0 12px rgba(255,255,255,0.9);
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .input-row label {
+      font-size: 9px;
+      color: #ffcc00;
+      width: 15px;
+    }
+    .input-row input[type="text"] {
+      flex: 1;
+      background: #0a0a0f;
+      border: 1px solid #ffcc00;
+      color: #ffcc00;
+      padding: 4px 6px;
+      font-size: 9px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    .control-panel-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .dpad-container, .height-container, .rotate-container {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0a0a0f;
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #252938;
+    }
+    .dpad-row { display: flex; justify-content: center; }
+    .btn-nav {
+      width: 28px;
+      height: 28px;
+      font-size: 9px;
+      padding: 0;
+      margin: 1px;
+    }
+    .btn-height, .btn-rot {
+      width: 45px;
+      height: 28px;
+      font-size: 8px;
+      padding: 0;
+      margin: 1px;
+    }
+
+    .fader-panel {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    .channel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      min-width: 40px;
+      height: 120px;
+      position: relative;
+      background: #0a0a0f;
+      padding: 4px 2px;
+      border-radius: 4px;
+      border: 1px solid #252938;
+    }
+    .channel .value {
+      font-size: 9px;
+      font-weight: bold;
+      color: #ffcc00;
+      margin-bottom: 2px;
+    }
+    .channel input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 18px;
+      background: transparent;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      margin: 30px 0;
+    }
+    .channel input[type=range]::-webkit-slider-runnable-track {
+      height: 5px;
+      background: #181a24;
+      border-radius: 3px;
+      border: 1px solid #32374d;
+    }
+    .channel input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 18px;
+      background: #ffcc00;
+      border: 1px solid #fff;
+      border-radius: 2px;
+      margin-top: -6px;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(255,204,0,0.6);
+    }
+    .channel label {
+      font-size: 8px;
+      font-weight: bold;
+      color: #ffcc00;
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: 1px solid #ffcc00;
+      width: 36px;
+      height: 28px;
+      border-radius: 3px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 2px; }
+
+    #installNoticeWrap{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:2147483646;display:none;align-items:center;gap:5px;width:330px;max-width:calc(100vw - 20px);box-sizing:border-box;}
+    #customInstallBtn{flex:1;min-width:0;height:54px;padding:7px 9px;display:flex;align-items:center;gap:9px;border:1px solid #ffcc00;border-radius:10px;background:linear-gradient(135deg,#202020,#09090d);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer;box-sizing:border-box;}
+    .anfInstallLogo{width:40px;height:40px;flex:0 0 40px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:9px;background:#050505;border:1px solid rgba(255,204,0,.55);}
+    #appManifestLogo{display:none;width:100%;height:100%;object-fit:cover;}
+    .anfLogoFallback{display:flex;width:100%;height:100%;align-items:center;justify-content:center;font:900 10px Arial,sans-serif;letter-spacing:.6px;background:linear-gradient(135deg,#ffcc00,#ff7a00);color:#fff;}
+    .anfInstallText{min-width:0;flex:1;display:flex;flex-direction:column;text-align:left;line-height:1.15;}
+    .anfInstallText strong{font:900 12px Arial,sans-serif;letter-spacing:.7px;margin-bottom:4px;}
+    .anfInstallText small{color:rgba(255,255,255,.62);font:500 9px Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #closeInstallBtn{width:27px;height:54px;flex:0 0 27px;padding:0;border:1px solid #ffcc00;border-radius:9px;background:#09090d;color:#ffcc00;font:bold 15px Arial,sans-serif;cursor:pointer;}
+    #closeInstallBtn:hover{background:#ffcc00;color:#000;}
+
+    #iosInstallNotice {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      background: rgba(15, 16, 21, 0.95);
+      border: 1px solid #ffcc00;
+      color: #ffcc00;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 10px;
+      text-align: center;
+      display: none;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      max-width: 90%;
+    }
+
+    /* === VIDIOTRON 3D === */
+    #vidiotronPanel .vid-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+    #vidiotronPanel .vid-row label{color:#ffcc00;font-size:8px;font-weight:bold;min-width:28px}
+    #vidiotronPanel input[type=range]{flex:1;min-width:90px;accent-color:#ffcc00}
+    #vidiotronPanel select,#vidiotronPanel input[type=file]{
+      flex:1;background:#0a0a0f;color:#ffcc00;border:1px solid #ffcc00;
+      border-radius:3px;padding:5px;font-size:9px;min-width:120px;
+    }
+    #vidiotronPanel .vid-value{color:#fff;font-family:monospace;font-size:8px;min-width:38px;text-align:right}
+    #vidiotronPanel .vid-status{color:#aaa;font-size:8px;line-height:1.35}
+    #vidiotronPanel .vid-danger{background:#3b1a1a;color:#ff7777;border-color:#ff7777}
+
+
+    /* === CONSOLE MODE TABS === */
+    .console-tabs{
+      display:flex;
+      gap:5px;
+      padding:5px;
+      background:#0d0f16;
+      border:1px solid #2a2e3d;
+      border-radius:4px;
+    }
+    .console-tab{
+      flex:1;
+      padding:8px 10px;
+      font-size:10px;
+      background:#151824;
+      color:#777;
+      border:1px solid #303546;
+    }
+    .console-tab.active{
+      background:#ffcc00;
+      color:#000;
+      border-color:#ffcc00;
+      box-shadow:0 0 10px rgba(255,204,0,.35);
+    }
+    .console-mode{display:none;}
+    .console-mode.active{display:block;}
+    .main-section{
+      background:#12141d;
+      padding:8px;
+      border-radius:4px;
+      border:1px solid #2a2e3d;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .mode-label{
+      color:#00e5ff;
+      font-size:8px;
+      font-weight:bold;
+      letter-spacing:1px;
+      margin-bottom:2px;
+    }
+
+  </style>
+
+  <link rel="manifest" href="manifest.json">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+
+<body>
+<div id="app">
+  <!-- TOMBOL INSTALL DENGAN GAMBAR LOGO OTOMATIS DARI MANIFEST.JSON -->
+  <div id="installNoticeWrap">
+  <button id="customInstallBtn" type="button" aria-label="Install ANF Lighting App">
+    <span class="anfInstallLogo">
+      <img id="appManifestLogo" src="" alt="ANF LIGHTING">
+      <span class="anfLogoFallback">ANF</span>
+    </span>
+    <span class="anfInstallText"><strong>ANF LIGHTING</strong><small>Install aplikasi ke perangkatmu</small></span>
+  </button>
+  <button id="closeInstallBtn" type="button" aria-label="Tutup">✕</button>
+</div>
+
+  <div id="iosInstallNotice">
+    📲 <b>Install di iPhone:</b> Tekan tombol <b>Share</b> lalu pilih <b>"Add to Home Screen"</b>
+    <br><button onclick="document.getElementById('iosInstallNotice').style.display='none'" style="margin-top:5px; padding:2px 8px; font-size:8px;">TUTUP</button>
+  </div>
+
+  <div id="stageWrap">
+    <div id="stage3D"></div>
+    <div id="selectionInfo">Selected: None</div>
+    <div id="watermark">ANF LIGHTING BY ANF AUDIO 2 🔊🔊</div>
+  </div>
+
+  
+<div id="console">
+  <div class="console-tabs">
+    <button class="console-tab active" data-mode="modeMain">MAIN MODE</button>
+    <button class="console-tab" data-mode="modeEditor">EDITOR</button>
+  </div>
+
+  <div class="console-header">
+    <div class="console-title">ANF LIGHTING V8.5 MODULAR RIGGING BY AHNAF </div>
+    <div class="console-subtitle">SYSTEM READY</div>
+  </div>
+
+  
+      <div id="modeMain" class="console-mode active">
+        <div class="main-section">
+          <div class="mode-label">MAIN MODE • LIVE CONTROL</div>
+
+          <div style="display:flex;gap:6px;width:100%;">
+            <button id="miniBruteBtn" style="flex:1;background:#3b2a00;color:#ffdd44;border-color:#ffdd44;">HOLD FLASH MINIBRUTE</button>
+            <button onclick="paused=!paused" style="border-color:#ffffff;">PAUSE / PLAY</button>
+          </div>
+
+          <div class="panel-title" style="margin:0;padding:0;border:none;">BEAM MODE</div>
+          <div class="scroll-row">
+            <button onclick="beamMode='normal'">BEAM NORMAL</button>
+            <button onclick="beamMode='linear'">PRISM (LINEAR)</button>
+            <button onclick="beamMode='circle'">PRISM (CIRCULAR)</button>
+            <button id="prismRotateBtn">PRISM ROTATE ON</button>
+          </div>
+
+          <div class="panel-title" style="margin:0;padding:0;border:none;">MOVING HEAD STROBE</div>
+          <div class="scroll-row">
+            <button onclick="strobe='off'">STR OFF</button>
+            <button onclick="strobe='slow'">SLOW</button>
+            <button onclick="strobe='fast'">FAST</button>
+            <button onclick="strobe='pulse'">PULSE</button>
+            <button onclick="strobe='chase'">CHASE</button>
+            <button onclick="strobe='single'">SINGLE</button>
+            <button onclick="strobe='single_in'">SINGLE IN</button>
+            <button onclick="strobe='left_right'">LEFT ↔ RIGHT</button>
+          </div>
+
+          <div class="panel-title" style="margin:0;padding:0;border:none;">MOVING HEAD MOVEMENT</div>
+          <div class="scroll-row">
+            <button onclick="moveMode='fan'">FAN</button>
+            <button onclick="moveMode='wave'">WAVE</button>
+            <button onclick="moveMode='zigzag'">ZIG-ZAG</button>
+            <button onclick="moveMode='zigzag_ud'">ZIGZAG U-D</button>
+            <button onclick="moveMode='concert'">CONCERT</button>
+            <button onclick="moveMode='babat'">BABAT</button>
+            <button onclick="moveMode='pargoy'">PARGOY</button>
+            <button onclick="moveMode='circle'">CIRCLE</button>
+            <button onclick="moveMode='cibat'">CIBAT</button>
+            <button onclick="moveMode='mirror_circle'">MIRROR CIRCLE</button>
+            <button onclick="moveMode='circle_bounce'">CIRCLE ↔</button>
+            <button onclick="moveMode='mirror_circle_bounce'">MIRROR CIRCLE ↔</button>
+            <button onclick="moveMode='crazy'">CRAZY</button>
+            <button onclick="moveMode='all_lr'">ALL L-R</button>
+            <button onclick="moveMode='updown'">UP-DOWN</button>
+            <button onclick="moveMode='all_updown'">ALL U-D</button>
+            <button onclick="moveMode='infinity'">INFINITY</button>
+            <button onclick="moveMode='custom'">CUSTOM</button>
+          </div>
+
+          <div class="panel-title" style="margin:0;padding:0;border:none;">WARNA BEAM</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:4px;background:#1a1c28;padding:3px 6px;border:1px solid #ffcc00;border-radius:3px;">
+              <input type="color" value="#ffffff" id="color" title="Pilih Warna Beam">
+              <span style="font-size:8px;color:#ffcc00;font-weight:bold;">COLOR 1</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;background:#1a1c28;padding:3px 6px;border:1px solid #ffcc00;border-radius:3px;">
+              <input type="color" value="#ffff00" id="color2" title="Pilih Warna Beam 2">
+              <span style="font-size:8px;color:#ffcc00;font-weight:bold;">COLOR 2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="anf-panel">
+          <div class="panel-title">CUSTOM MOVEMENT FORMULA <span>MATH</span></div>
+          <div class="input-row">
+            <label>X:</label>
+            <input type="text" id="customX" value="Math.sin(t*2 + i*0.4)*4">
+          </div>
+          <div class="input-row">
+            <label>Y:</label>
+            <input type="text" id="customY" value="Math.cos(t*2 + i*0.4)*3">
+          </div>
+          <button onclick="applyCustomMovement()" style="margin-top:4px;">APPLY MATH FORMULA</button>
+        </div>
+
+        <div class="anf-panel">
+          <div class="panel-title">MASTER FADERS <span>LIVE</span></div>
+          <div class="fader-panel">
+            <div class="channel">
+              <div class="value" id="fogVal">30</div>
+              <input type="range" min="0" max="100" value="70" id="fog" oninput="document.getElementById('fogVal').innerText=this.value">
+              <label>FOG</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="beamVal">50</div>
+              <input type="range" min="1" max="100" value="50" id="beam" oninput="document.getElementById('beamVal').innerText=this.value">
+              <label>BEAM</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="strVal">10</div>
+              <input type="range" min="1" max="30" value="10" id="strobeSpeed" oninput="document.getElementById('strVal').innerText=this.value">
+              <label>STR SPD</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="moveVal">10</div>
+              <input type="range" min="1" max="30" value="10" id="moveSpeed" oninput="document.getElementById('moveVal').innerText=this.value">
+              <label>MOVE SPD</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  
+      <div id="modeEditor" class="console-mode">
+              <div class="anf-panel">
+        <div class="panel-title" style="margin: 0; padding:0; border:none; color:#00ffcc;">GLOBAL STAGE PRESET CODE (MODULAR TRUSS & POSISI)</div>
+      <div style="display: flex; gap: 4px; width: 100%; flex-wrap: wrap; align-items: center;">
+        <button onclick="exportPositionCode()" style="background:#0a2520; color:#00ffcc; border-color:#00ffcc;">EXPORT ALL</button>
+        <button onclick="importPositionCode()">IMPORT & GO</button>
+        <input type="text" id="posCodeInput" placeholder="Tempel kode panggung lengkap di sini..." style="flex:1; background:#0a0a0f; border:1px solid #00ffcc; color:#00ffcc; padding:6px; font-size:9px; border-radius:3px; font-family:monospace; min-width:150px;">
+      </div>
+
+        <div class="panel-title">TRANSFORM (POS & ROTATION) <span>3D TRANSFORM</span></div>
+        <div class="control-panel-row">
+          <div class="dpad-container">
+            <div style="font-size:7px; color:#ffcc00; font-weight:bold; margin-bottom:2px;">POS X/Z</div>
+            <div class="dpad-row">
+              <button class="btn-nav" onclick="moveSelectedDevice('forward')">▲</button>
+            </div>
+            <div class="dpad-row">
+              <button class="btn-nav" onclick="moveSelectedDevice('left')">◀</button>
+              <button class="btn-nav" onclick="deselectAll()">X</button>
+              <button class="btn-nav" onclick="moveSelectedDevice('right')">▶</button>
+            </div>
+            <div class="dpad-row">
+              <button class="btn-nav" onclick="moveSelectedDevice('backward')">▼</button>
+            </div>
+          </div>
+
+          <div class="height-container">
+            <div style="font-size:7px; color:#ffcc00; font-weight:bold; margin-bottom:2px;">POS Y</div>
+            <button class="btn-height" onclick="moveSelectedDevice('up')">▲ UP</button>
+            <button class="btn-height" onclick="moveSelectedDevice('down')">▼ DOWN</button>
+          </div>
+
+          <div class="rotate-container">
+            <div style="font-size:7px; color:#ffcc00; font-weight:bold; margin-bottom:2px;">ROTATE X / Y / Z</div>
+            <div style="display:flex; gap:2px;">
+              <button class="btn-rot" onclick="rotateSelectedDevice('x', -15)">X -15°</button>
+              <button class="btn-rot" onclick="rotateSelectedDevice('x', 15)">X +15°</button>
+            </div>
+            <div style="display:flex; gap:2px; margin-top:2px;">
+              <button class="btn-rot" onclick="rotateSelectedDevice('y', -15)">Y -15°</button>
+              <button class="btn-rot" onclick="rotateSelectedDevice('y', 15)">Y +15°</button>
+            </div>
+            <div style="display:flex; gap:2px; margin-top:2px;">
+              <button class="btn-rot" onclick="rotateSelectedDevice('z', -15)">Z -15°</button>
+              <button class="btn-rot" onclick="rotateSelectedDevice('z', 15)">Z +15°</button>
+            </div>
+            <button class="btn-rot" style="width:100%; margin-top:2px; background:#3b1a1a;" onclick="resetRotation()">RESET ROT</button>
+          </div>
+      </div>
+
+
+
+              <div class="anf-panel" id="vidiotronPanel">
+        <div class="panel-title" style="color:#00e5ff;">
+          VIDIOTRON 3D <span>VIDEO WALL</span>
+<div class="control-group" id="vidiotronCropPanel" style="margin-top:10px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(0,0,0,.16)">
+  <div style="font-weight:800;margin-bottom:8px">✂️ VIDEO CROP / POSITION</div>
+  <label>Crop Zoom <input id="vidCropZoom" type="range" min="-2" max="3" step="0.01" value="1"></label>
+  <label>Crop X <input id="vidCropX" type="range" min="-0.5" max="0.5" step="0.01" value="0"></label>
+  <label>Crop Y <input id="vidCropY" type="range" min="-0.5" max="0.5" step="0.01" value="0"></label>
+  <div style="display:flex;gap:6px;margin-top:8px">
+    <button id="vidCropReset" type="button">RESET CROP</button>
+    <button id="vidCropCenter" type="button">CENTER</button>
+  </div>
+  <div id="vidCropInfo" style="font-size:11px;opacity:.7;margin-top:7px">Zoom 1.00 • X 0.00 • Y 0.00</div>
+</div>
+
+        </div>
+
+        <div class="vid-row">
+          <input type="file" id="vidiotronFile" accept="video/mp4,video/webm,video/ogg">
+        </div>
+
+        <div class="vid-row">
+          <label>SHAPE</label>
+          <select id="vidiotronShape">
+            <option value="rectangle">RECTANGLE</option>
+            <option value="square">SQUARE</option>
+            <option value="diamond">DIAMOND</option>
+            <option value="circle">CIRCLE</option>
+            <option value="w">W-SHAPE</option>
+          </select>
+          <button id="vidiotronAddBtn">ADD / SHOW</button>
+        </div>
+
+        <div class="vid-row">
+          <label>SIZE</label>
+          <input type="range" id="vidiotronSize" min="0.5" max="12" step="0.1" value="6">
+          <span class="vid-value" id="vidiotronSizeVal">6.0</span>
+        </div>
+
+        <div class="vid-row"><label>POS X</label><input type="range" id="vidiotronX" min="-12" max="12" step="0.1" value="0"><span class="vid-value" id="vidiotronXVal">0.0</span></div>
+        <div class="vid-row"><label>POS Y</label><input type="range" id="vidiotronY" min="0" max="12" step="0.1" value="4"><span class="vid-value" id="vidiotronYVal">4.0</span></div>
+        <div class="vid-row"><label>POS Z</label><input type="range" id="vidiotronZ" min="-8" max="8" step="0.1" value="-1"><span class="vid-value" id="vidiotronZVal">-1.0</span></div>
+
+        <div class="vid-row"><label>ROT X</label><input type="range" id="vidiotronRX" min="-180" max="180" step="1" value="0"><span class="vid-value" id="vidiotronRXVal">0°</span></div>
+        <div class="vid-row"><label>ROT Y</label><input type="range" id="vidiotronRY" min="-180" max="180" step="1" value="0"><span class="vid-value" id="vidiotronRYVal">0°</span></div>
+        <div class="vid-row"><label>ROT Z</label><input type="range" id="vidiotronRZ" min="-180" max="180" step="1" value="0"><span class="vid-value" id="vidiotronRZVal">0°</span></div>
+
+        <div class="vid-row">
+          <label>OPACITY</label>
+          <input type="range" id="vidiotronOpacity" min="0" max="100" step="1" value="100">
+          <span class="vid-value" id="vidiotronOpacityVal">100%</span>
+        </div>
+
+        <div class="vid-row">
+          <button id="vidiotronPlay">▶ PLAY</button>
+          <button id="vidiotronPause">⏸ PAUSE</button>
+          <button id="vidiotronRestart">↻ RESTART</button>
+          <button id="vidiotronMute">🔇 MUTE</button>
+        </div>
+
+        <div class="vid-row">
+          <button id="vidiotronDelete" class="vid-danger">DELETE VIDIOTRON</button>
+        </div>
+
+        <div class="vid-status" id="vidiotronStatus">
+          Belum ada video. Upload video untuk membuat layar Vidiotron 3D.
+        </div>
+      </div>
+
+
+        
+        <div class="anf-panel" id="model3DPanel">
+          <div class="panel-title" style="color:#00ffcc;">UPLOAD MODEL 3D <span>GLB / GLTF / OBJ / ZIP</span></div>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+            <input type="file" id="model3DFile" accept=".zip,.glb,.gltf,.obj,application/zip,model/gltf-binary,model/gltf+json,text/plain" style="flex:1;background:#0a0a0f;color:#00ffcc;border:1px solid #00ffcc;border-radius:3px;padding:5px;font-size:9px;min-width:180px;">
+            <button id="model3DCopy" style="background:#0a2520;color:#00ffcc;border-color:#00ffcc;">COPY MODEL</button>
+            <button id="model3DDelete" style="background:#3b1a1a;color:#ff7777;border-color:#ff7777;">DELETE MODEL</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <label style="color:#00ffcc;font-size:8px;font-weight:bold;">SCALE <input id="model3DScale" type="range" min="0.05" max="5" step="0.01" value="1" style="width:120px;"></label>
+            <span id="model3DScaleVal" style="color:#fff;font-size:8px;">1.00</span>
+            <button id="model3DReset">RESET</button>
+          </div>
+          <div id="model3DStatus" style="color:#aaa;font-size:8px;line-height:1.35;">Belum ada model 3D. Upload GLB, GLTF, OBJ, atau ZIP.</div>
+        </div>
+
+        <div class="anf-panel">
+          <div class="panel-title">FIXTURE / RIG QUANTITY <span>EDITOR</span></div>
+          <div class="fader-panel">
+            <div class="channel">
+              <div class="value" id="trussLabel">0</div>
+              <input type="range" min="0" max="24" value="0" id="trussCount">
+              <label>TRUSS QTY</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="circleTrussLabel">0</div>
+              <input type="range" min="0" max="4" value="0" id="circleTrussCount">
+              <label>CIRCLE RIG</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="headLabel">10</div>
+              <input type="range" min="1" max="20" value="6" id="headCount">
+              <label>HEADS</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="parLabel">2</div>
+              <input type="range" min="0" max="16" value="2" id="parCount">
+              <label>PAR LEDS</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="barLabel">2</div>
+              <input type="range" min="1" max="16" value="2" id="barCount">
+              <label>STROBO BARS</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="martinLabel">4</div>
+              <input type="range" min="0" max="8" value="4" id="martinCount">
+              <label>MARTIN LEDS</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="anf-panel" id="fanLightPanel">
+          <div class="panel-title">FAN LIGHT RGB <span>HEX FAN 3D</span></div>
+          <div class="fader-panel">
+            <div class="channel">
+              <div class="value" id="fanLabel">1</div>
+              <input type="range" min="0" max="8" value="1" id="fanCount">
+              <label>FAN QTY</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="fanSpeedLabel">1.0</div>
+              <input type="range" min="0" max="30" value="10" id="fanSpeed">
+              <label>FAN SPD</label>
+            </div>
+            <div class="channel">
+              <div class="value" id="fanBrightLabel">100</div>
+              <input type="range" min="0" max="100" value="100" id="fanBrightness">
+              <label>BRIGHT</label>
+            </div>
+          </div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <button id="fanRgbBtn" class="active">RGB AUTO</button>
+            <button id="fanRotateBtn">ROTATE ON</button>
+          </div>
+        </div>
+
+      </div>
+
+</div>
+<script>
+const container = document.getElementById("stage3D");
+const infoBox = document.getElementById("selectionInfo");
+const trussCountSlider = document.getElementById("trussCount");
+const trussLabel = document.getElementById("trussLabel");
+const circleTrussCountSlider = document.getElementById("circleTrussCount");
+const circleTrussLabel = document.getElementById("circleTrussLabel");
+const headCountSlider = document.getElementById("headCount");
+const headLabel = document.getElementById("headLabel");
+const parCountSlider = document.getElementById("parCount");
+const parLabel = document.getElementById("parLabel");
+const barCountSlider = document.getElementById("barCount");
+const barLabel = document.getElementById("barLabel");
+const martinCountSlider = document.getElementById("martinCount");
+const martinLabel = document.getElementById("martinLabel");
+const fanCountSlider = document.getElementById("fanCount");
+const fanLabel = document.getElementById("fanLabel");
+const fanSpeedSlider = document.getElementById("fanSpeed");
+const fanSpeedLabel = document.getElementById("fanSpeedLabel");
+const fanBrightnessSlider = document.getElementById("fanBrightness");
+const fanBrightLabel = document.getElementById("fanBrightLabel");
+const fanRgbBtn = document.getElementById("fanRgbBtn");
+const fanRotateBtn = document.getElementById("fanRotateBtn");
+const colorInput = document.getElementById("color");
+const colorInput2 = document.getElementById("color2");
+const beamVolumeSlider = document.getElementById("beam");
+const fogSlider = document.getElementById("fog");
+
+let selectedObject = null;
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x15151c, 0.03); 
+
+const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+camera.position.set(0, 5, 15);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setClearColor(0x181a24, 1.0); 
+renderer.shadowMap.enabled = true;
+container.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 3.5, 0);
+controls.update();
+
+const ambientLight = new THREE.AmbientLight(0x8899bb, 1.6); 
+scene.add(ambientLight);
+
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x555566, 1.0);
+hemiLight.position.set(0, 20, 0);
+scene.add(hemiLight);
+
+const frontLight = new THREE.DirectionalLight(0xffffff, 0.9);
+frontLight.position.set(0, 8, 15);
+scene.add(frontLight);
+
+const minibruteSpot = new THREE.SpotLight(0xffe2b2, 0, 35, Math.PI / 2.5, 0.4, 1);
+minibruteSpot.position.set(0, 8.5, 1.0);
+scene.add(minibruteSpot);
+
+const minibruteGlow = new THREE.PointLight(0xffc566, 0, 12);
+minibruteGlow.position.set(0, 8.5, 1.2);
+scene.add(minibruteGlow);
+
+const floorSize = 40;
+const canvasSize = 512;
+const ctxCanvas = document.createElement('canvas');
+ctxCanvas.width = canvasSize; ctxCanvas.height = canvasSize;
+const ctx = ctxCanvas.getContext('2d');
+const squareSize = canvasSize / 8;
+for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 8; j++) {
+        ctx.fillStyle = (i + j) % 2 === 0 ? '#323440' : '#222430';
+        ctx.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
+    }
+}
+const floorTexture = new THREE.CanvasTexture(ctxCanvas);
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(8, 8);
+
+const floorGeo = new THREE.PlaneGeometry(floorSize, floorSize);
+const floorMat = new THREE.MeshStandardMaterial({ map: floorTexture, roughness: 0.5 });
+const floor = new THREE.Mesh(floorGeo, floorMat);
+floor.name = "FLOOR";
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const gridHelper = new THREE.GridHelper(floorSize, 40, 0x556677, 0x333344);
+gridHelper.position.y = 0.01;
+scene.add(gridHelper);
+
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0x555a6e, metalness: 0.6, roughness: 0.2 });
+const trussMat = new THREE.MeshStandardMaterial({ color: 0x99a0b5, metalness: 0.8, roughness: 0.15 });
+const lensOffMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.1 });
+const lensOnMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffeedd, emissiveIntensity: 10.0, roughness: 0.1 });
+
+// === STANDARD STRAIGHT TRUSS ===
+function createSingleTrussSegment(length = 6) {
+  const trussGroup = new THREE.Group();
+  trussGroup.name = "TRUSS_BAR";
+
+  const sz = 0.6; 
+  const railGeo = new THREE.CylinderGeometry(0.035, 0.035, length, 8);
+  
+  const offsets = [
+    [-sz/2, sz/2], [sz/2, sz/2],
+    [-sz/2, -sz/2], [sz/2, -sz/2]
+  ];
+
+  offsets.forEach(([ox, oz]) => {
+    const rail = new THREE.Mesh(railGeo, trussMat);
+    rail.position.set(ox, 0, oz);
+    trussGroup.add(rail);
+  });
+
+  const stepCount = Math.floor(length / 0.8);
+  for (let i = 0; i <= stepCount; i++) {
+    const yPos = -length / 2 + (i * (length / stepCount));
+    const ringGeo = new THREE.BoxGeometry(sz, 0.03, sz);
+    const ring = new THREE.Mesh(ringGeo, trussMat);
+    ring.position.y = yPos;
+    trussGroup.add(ring);
+  }
+
+  return trussGroup;
+}
+
+let trussPool = [];
+const maxTrussBars = 24;
+
+function initTrussPool() {
+  for(let i=0; i<maxTrussBars; i++) {
+    const trussBar = createSingleTrussSegment(6);
+    trussBar.name = "TRUSS_" + (i + 1);
+    trussBar.visible = false;
+    scene.add(trussBar);
+    trussPool.push(trussBar);
+  }
+}
+initTrussPool();
+
+function rebuildTrussPool() {
+  const count = parseInt(trussCountSlider.value);
+  for(let i=0; i<maxTrussBars; i++) {
+    if(i < count) {
+      const posX = (i - (count - 1) / 2) * 2.5;
+      trussPool[i].position.set(posX, 3.5, 0);
+      trussPool[i].rotation.set(0, 0, 0);
+      trussPool[i].visible = true;
+    } else {
+      trussPool[i].visible = false;
+      if (selectedObject === trussPool[i]) deselectAll();
+    }
+  }
+}
+rebuildTrussPool();
+
+// === CIRCULAR 3D TRUSS ===
+function createCircleTruss() {
+  const group = new THREE.Group();
+  
+  const radOuter = 3.0;
+  const radInner = 2.4;
+  const h = 0.25;
+  const railRadius = 0.035;
+
+  const rings = [
+    { r: radOuter, y: h }, { r: radOuter, y: -h },
+    { r: radInner, y: h }, { r: radInner, y: -h }
+  ];
+
+  rings.forEach(ring => {
+    const torusGeo = new THREE.TorusGeometry(ring.r, railRadius, 8, 64);
+    const mesh = new THREE.Mesh(torusGeo, trussMat);
+    mesh.rotation.x = Math.PI / 2;
+    mesh.position.y = ring.y;
+    group.add(mesh);
+  });
+
+  const numSpokes = 8;
+  const braceLength = radOuter - radInner;
+  const braceGeo = new THREE.BoxGeometry(braceLength, h * 2 + railRadius * 2, 0.05);
+  for(let i=0; i<numSpokes; i++) {
+    const angle = (i / numSpokes) * Math.PI * 2;
+    const brace = new THREE.Mesh(braceGeo, trussMat);
+    const midR = (radOuter + radInner) / 2;
+    brace.position.set(Math.cos(angle) * midR, 0, Math.sin(angle) * midR);
+    brace.rotation.y = -angle;
+    group.add(brace);
+  }
+
+  const vertBraceGeo = new THREE.BoxGeometry(0.04, h * 2, 0.04);
+  const numVerts = 24;
+  for(let i=0; i<numVerts; i++) {
+    const angle = (i / numVerts) * Math.PI * 2;
+    
+    const vOut = new THREE.Mesh(vertBraceGeo, trussMat);
+    vOut.position.set(Math.cos(angle) * radOuter, 0, Math.sin(angle) * radOuter);
+    group.add(vOut);
+    
+    const vIn = new THREE.Mesh(vertBraceGeo, trussMat);
+    vIn.position.set(Math.cos(angle) * radInner, 0, Math.sin(angle) * radInner);
+    group.add(vIn);
+  }
+
+  const crossGeo = new THREE.BoxGeometry(0.1, 0.1, radInner * 2);
+  const cross1 = new THREE.Mesh(crossGeo, trussMat);
+  group.add(cross1);
+
+  const cross2 = new THREE.Mesh(crossGeo, trussMat);
+  cross2.rotation.y = Math.PI / 2;
+  group.add(cross2);
+
+  return group;
+}
+
+let circleTrussPool = [];
+const maxCircleTrusses = 4;
+
+function initCircleTrussPool() {
+  for(let i=0; i<maxCircleTrusses; i++) {
+    const circleTr = createCircleTruss();
+    circleTr.name = "CIRCLE_TRUSS_" + (i + 1);
+    circleTr.visible = false;
+    scene.add(circleTr);
+    circleTrussPool.push(circleTr);
+  }
+}
+initCircleTrussPool();
+
+function rebuildCircleTrussPool() {
+  const count = parseInt(circleTrussCountSlider.value);
+  for(let i=0; i<maxCircleTrusses; i++) {
+    if(i < count) {
+      const posY = 7 + (i * 1.5);
+      circleTrussPool[i].position.set(0, posY, 0);
+      circleTrussPool[i].rotation.set(0, 0, 0);
+      circleTrussPool[i].visible = true;
+    } else {
+      circleTrussPool[i].visible = false;
+      if (selectedObject === circleTrussPool[i]) deselectAll();
+    }
+  }
+}
+rebuildCircleTrussPool();
+
+// === PAR LEDS ===
+let parLeds = [];
+const maxParLeds = 16;
+
+function createParLedFixture(index) {
+  const group = new THREE.Group();
+  group.name = "PAR_LED_" + (index + 1);
+
+  const canGeo = new THREE.CylinderGeometry(0.35, 0.28, 0.5, 16);
+  canGeo.rotateX(Math.PI / 2);
+  const canMesh = new THREE.Mesh(canGeo, bodyMat);
+  group.add(canMesh);
+
+  const lensGeo = new THREE.CircleGeometry(0.33, 16);
+  const lensMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    emissive: 0xff0000,
+    emissiveIntensity: 8.0,
+    roughness: 0.1
+  });
+  const lensMesh = new THREE.Mesh(lensGeo, lensMat);
+  lensMesh.position.z = 0.251;
+  group.add(lensMesh);
+
+  const spotLight = new THREE.SpotLight(0xff0000, 25.0, 30, Math.PI / 3, 0.4, 1);
+  spotLight.position.set(0, 0, 0.3);
+  const targetObj = new THREE.Object3D();
+  targetObj.position.set(0, 0, 8);
+  group.add(targetObj);
+  spotLight.target = targetObj;
+  group.add(spotLight);
+
+  const glowLight = new THREE.PointLight(0xff0000, 10.0, 8);
+  glowLight.position.set(0, 0, 0.4);
+  group.add(glowLight);
+
+  return { group, lensMat, spotLight, glowLight };
+}
+
+function initParPool() {
+  for(let i=0; i<maxParLeds; i++) {
+    const pData = createParLedFixture(i);
+    pData.group.visible = false;
+    scene.add(pData.group);
+    parLeds.push(pData);
+  }
+}
+initParPool();
+
+function rebuildParLeds() {
+  const count = parseInt(parCountSlider.value);
+  const areaWidth = 8;
+  for(let i=0; i<maxParLeds; i++) {
+    if(i < count) {
+      const posX = (count === 1) ? 0 : (i - (count - 1) / 2) * (areaWidth / Math.max(1, count - 1));
+      parLeds[i].group.position.set(posX, 1.0, -3.0);
+      parLeds[i].group.rotation.set(-Math.PI / 8, 0, 0);
+      parLeds[i].group.visible = true;
+    } else {
+      parLeds[i].group.visible = false;
+      if (selectedObject === parLeds[i].group) deselectAll();
+    }
+  }
+}
+
+// === MARTIN ATOMIC ===
+let martinStrobes = [];
+const maxMartinStrobes = 8;
+const BOX_COLS = 18;
+const BOX_ROWS = 4;
+
+function createMartinAtomicFixture(index) {
+  const group = new THREE.Group();
+  group.name = "MARTIN_ATOMIC_" + (index + 1);
+
+  const width = 1.2;
+  const height = 0.6;
+  const depth = 0.2;
+  
+  const bodyGeo = new THREE.BoxGeometry(width, height, depth);
+  const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+  group.add(bodyMesh);
+
+  const panelW = width - 0.1;
+  const panelH = height - 0.1;
+  const cellW = panelW / BOX_COLS;
+  const cellH = panelH / BOX_ROWS;
+  const startX = -panelW / 2 + cellW / 2;
+  const startY = panelH / 2 - cellH / 2;
+
+  const leds = [];
+
+  for (let r = 0; r < BOX_ROWS; r++) {
+    for (let c = 0; c < BOX_COLS; c++) {
+      const ledGeo = new THREE.PlaneGeometry(cellW * 0.85, cellH * 0.85);
+      const ledMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
+      const ledMesh = new THREE.Mesh(ledGeo, ledMat);
+      ledMesh.position.set(startX + c * cellW, startY - r * cellH, depth / 2 + 0.01);
+      group.add(ledMesh);
+      leds.push({ mat: ledMat, col: c, row: r });
+    }
+  }
+
+  return { group, leds };
+}
+
+function initMartinPool() {
+  for(let i=0; i<maxMartinStrobes; i++) {
+    const mData = createMartinAtomicFixture(i);
+    mData.group.visible = false;
+    scene.add(mData.group);
+    martinStrobes.push(mData);
+  }
+}
+initMartinPool();
+
+function rebuildMartinStrobes() {
+  const count = parseInt(martinCountSlider.value);
+  const areaWidth = 16;
+  for(let i=0; i<maxMartinStrobes; i++) {
+    if(i < count) {
+      const posX = (i - (count - 1) / 2) * (areaWidth / Math.max(1, count - 1));
+      martinStrobes[i].group.position.set(posX, 8.0, -2.5);
+      martinStrobes[i].group.rotation.set(0,0,0);
+      martinStrobes[i].group.visible = true;
+    } else {
+      martinStrobes[i].group.visible = false;
+      if (selectedObject === martinStrobes[i].group) deselectAll();
+    }
+  }
+}
+
+// === STROBO BARS ===
+let stroboBars = [];
+const maxStroboBars = 16;
+
+function createStroboBarFixture(index) {
+  const barUnitWidth = 2.4;
+  const unitGroup = new THREE.Group();
+  unitGroup.name = "STROBO_BAR_" + (index + 1);
+
+  const boxGeo = new THREE.BoxGeometry(barUnitWidth, 0.25, 0.3);
+  const boxMesh = new THREE.Mesh(boxGeo, bodyMat);
+  unitGroup.add(boxMesh);
+
+  const segsPerUnit = 6;
+  const segWidth = (barUnitWidth - 0.2) / segsPerUnit;
+  const segments = [];
+
+  for(let s = 0; s < segsPerUnit; s++) {
+    const segGeo = new THREE.BoxGeometry(segWidth - 0.04, 0.15, 0.05);
+    const segMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 });
+    const segMesh = new THREE.Mesh(segGeo, segMat);
+    
+    const localX = -(barUnitWidth - 0.2)/2 + (s + 0.5) * segWidth;
+    segMesh.position.set(localX, 0, 0.15);
+    unitGroup.add(segMesh);
+
+    segments.push(segMat);
+  }
+
+  return { unitGroup, segments };
+}
+
+function initStroboPool() {
+  for(let i=0; i<maxStroboBars; i++) {
+    const bData = createStroboBarFixture(i);
+    bData.unitGroup.visible = false;
+    scene.add(bData.unitGroup);
+    stroboBars.push(bData);
+  }
+}
+initStroboPool();
+
+function rebuildStroboBars() {
+  const count = parseInt(barCountSlider.value);
+  const areaWidth = 16;
+  for(let i=0; i<maxStroboBars; i++) {
+    if(i < count) {
+      const posX = (i - (count - 1) / 2) * (areaWidth / Math.max(1, count - 1));
+      stroboBars[i].unitGroup.position.set(posX, 5.5, 1.5);
+      stroboBars[i].unitGroup.rotation.set(0,0,0);
+      stroboBars[i].unitGroup.visible = true;
+    } else {
+      stroboBars[i].unitGroup.visible = false;
+      if (selectedObject === stroboBars[i].unitGroup) deselectAll();
+    }
+  }
+}
+
+// === FAN LIGHT RGB 3D ===
+// Bentuk mengikuti lampu kipas pada referensi: frame hexagonal + 6 bilah LED RGB.
+let fanLights = [];
+const maxFanLights = 8;
+
+function createHexRingShape(outerR = 3.0, innerR = 2.55) {
+  const shape = new THREE.Shape();
+  for(let i = 0; i < 6; i++) {
+    const a = Math.PI / 6 + (i / 6) * Math.PI * 2;
+    const x = Math.cos(a) * outerR;
+    const y = Math.sin(a) * outerR;
+    if(i === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
+  }
+  shape.closePath();
+
+  const hole = new THREE.Path();
+  for(let i = 0; i < 6; i++) {
+    const a = Math.PI / 6 + (i / 6) * Math.PI * 2;
+    const x = Math.cos(a) * innerR;
+    const y = Math.sin(a) * innerR;
+    if(i === 0) hole.moveTo(x, y); else hole.lineTo(x, y);
+  }
+  hole.closePath();
+  shape.holes.push(hole);
+  return shape;
+}
+
+function createFanBladeShape() {
+  // Trapezoid yang melebar ke luar seperti bilah pada lampu referensi.
+  const shape = new THREE.Shape();
+  shape.moveTo(0.22, -0.18);
+  shape.lineTo(0.58, -0.34);
+  shape.lineTo(2.18, -0.62);
+  shape.lineTo(2.34,  0.38);
+  shape.lineTo(0.55,  0.30);
+  shape.closePath();
+  return shape;
+}
+
+function createFanLightFixture(index) {
+  const group = new THREE.Group();
+  group.name = "FAN_LIGHT_" + (index + 1);
+
+  // Back plate / frame.
+  const backGeo = new THREE.CylinderGeometry(2.98, 2.98, 0.22, 6);
+  backGeo.rotateX(Math.PI / 2);
+  const backMat = new THREE.MeshStandardMaterial({
+    color: 0x111318, metalness: 0.75, roughness: 0.25
+  });
+  const back = new THREE.Mesh(backGeo, backMat);
+  group.add(back);
+
+  // Hexagonal RGB outer frame.
+  const ringShape = createHexRingShape(3.0, 2.58);
+  const ringGeo = new THREE.ExtrudeGeometry(ringShape, {
+    depth: 0.22, bevelEnabled: false, curveSegments: 1, steps: 1
+  });
+  ringGeo.translate(0, 0, 0.12);
+  const ringMat = new THREE.MeshStandardMaterial({
+    color: 0xff3344, emissive: 0xff3344, emissiveIntensity: 4.0,
+    metalness: 0.25, roughness: 0.28
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.name = "HEX_FRAME";
+  group.add(ring);
+
+  const bladeGroup = new THREE.Group();
+  bladeGroup.name = "FAN_BLADES";
+  group.add(bladeGroup);
+
+  const blades = [];
+  const ledMats = [];
+  const ledCountPerBlade = 12;
+  const bladeShape = createFanBladeShape();
+  const bladeGeo = new THREE.ExtrudeGeometry(bladeShape, {
+    depth: 0.16, bevelEnabled: false, curveSegments: 1, steps: 1
+  });
+  bladeGeo.translate(0, 0, 0.23);
+
+  for(let b = 0; b < 6; b++) {
+    const blade = new THREE.Group();
+    blade.rotation.z = (b / 6) * Math.PI * 2;
+
+    const bodyMatBlade = new THREE.MeshStandardMaterial({
+      color: 0x15171d, metalness: 0.55, roughness: 0.35
+    });
+    const body = new THREE.Mesh(bladeGeo, bodyMatBlade);
+    blade.add(body);
+
+    const bladeLeds = [];
+    for(let k = 0; k < ledCountPerBlade; k++) {
+      const u = k / (ledCountPerBlade - 1);
+      const x = 0.62 + u * 1.42;
+      // Sedikit lengkung mengikuti bentuk bilah.
+      const y = 0.02 + Math.sin(u * Math.PI) * 0.06;
+      const ledGeo = new THREE.CylinderGeometry(0.085, 0.085, 0.045, 8);
+      ledGeo.rotateX(Math.PI / 2);
+      const ledMat = new THREE.MeshStandardMaterial({
+        color: 0x050505,
+        emissive: 0x000000,
+        emissiveIntensity: 0,
+        roughness: 0.2,
+        metalness: 0.1
+      });
+      const led = new THREE.Mesh(ledGeo, ledMat);
+      led.position.set(x, y, 0.42);
+      blade.add(led);
+      bladeLeds.push({ mat: ledMat, index: k });
+      ledMats.push(ledMat);
+    }
+
+    blades.push({ group: blade, leds: bladeLeds });
+    bladeGroup.add(blade);
+  }
+
+  // Hub tengah.
+  const hubOuterGeo = new THREE.CylinderGeometry(0.62, 0.72, 0.38, 24);
+  hubOuterGeo.rotateX(Math.PI / 2);
+  const hubMat = new THREE.MeshStandardMaterial({
+    color: 0x30333b, metalness: 0.8, roughness: 0.2
+  });
+  const hub = new THREE.Mesh(hubOuterGeo, hubMat);
+  hub.position.z = 0.35;
+  group.add(hub);
+
+  const hubLedGeo = new THREE.CylinderGeometry(0.40, 0.40, 0.06, 24);
+  hubLedGeo.rotateX(Math.PI / 2);
+  const hubLedMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.5
+  });
+  const hubLed = new THREE.Mesh(hubLedGeo, hubLedMat);
+  hubLed.position.z = 0.57;
+  group.add(hubLed);
+
+  // Glow point agar fixture terasa benar-benar menyala di stage.
+  const glow = new THREE.PointLight(0xffffff, 8, 7);
+  glow.position.set(0, 0, 0.8);
+  group.add(glow);
+
+  return { group, bladeGroup, ringMat, blades, hubLedMat, glow };
+}
+
+function initFanPool() {
+  for(let i = 0; i < maxFanLights; i++) {
+    const data = createFanLightFixture(i);
+    data.group.visible = false;
+    scene.add(data.group);
+    fanLights.push(data);
+  }
+}
+initFanPool();
+
+function rebuildFanLights() {
+  const count = parseInt(fanCountSlider.value);
+  const positions = [];
+
+  if(count === 1) {
+    positions.push({x:0, y:8.1, z:-1.5});
+  } else {
+    for(let i = 0; i < count; i++) {
+      const cols = Math.min(4, count);
+      const rows = Math.ceil(count / cols);
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = (col - (cols - 1) / 2) * 4.1;
+      const y = 8.5 - row * 3.3 - (rows > 1 ? 0.3 : 0);
+      positions.push({x, y, z:-1.5});
+    }
+  }
+
+  for(let i = 0; i < maxFanLights; i++) {
+    if(i < count) {
+      const p = positions[i];
+      fanLights[i].group.position.set(p.x, p.y, p.z);
+      fanLights[i].group.rotation.set(0, 0, 0);
+      fanLights[i].group.scale.setScalar(0.22);
+      fanLights[i].group.visible = true;
+    } else {
+      fanLights[i].group.visible = false;
+      if(selectedObject === fanLights[i].group) deselectAll();
+    }
+  }
+}
+rebuildFanLights();
+
+// === MINIBRUTE ===
+const minibruteGroup = new THREE.Group();
+minibruteGroup.name = "MINIBRUTE";
+
+const miniBodyGeo = new THREE.BoxGeometry(1.2, 1.2, 0.4);
+const miniBody = new THREE.Mesh(miniBodyGeo, bodyMat);
+minibruteGroup.add(miniBody);
+
+const blinders = [];
+const positions = [
+  {x: -0.3, y: 0.3},  {x: 0.3, y: 0.3},
+  {x: -0.3, y: -0.3}, {x: 0.3, y: -0.3}
+];
+
+positions.forEach(pos => {
+  const reflectorGeo = new THREE.CylinderGeometry(0.22, 0.25, 0.15, 16);
+  reflectorGeo.rotateX(Math.PI / 2);
+  const reflector = new THREE.Mesh(reflectorGeo, bodyMat);
+  reflector.position.set(pos.x, pos.y, 0.15);
+  minibruteGroup.add(reflector);
+
+  const innerLensGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.02, 16);
+  innerLensGeo.rotateX(Math.PI / 2);
+  const innerLens = new THREE.Mesh(innerLensGeo, lensOffMat);
+  innerLens.position.set(pos.x, pos.y, 0.23);
+  minibruteGroup.add(innerLens);
+  blinders.push(innerLens);
+});
+
+minibruteGroup.position.set(0, 8.5, 1.2);
+minibruteSpot.target = minibruteGroup;
+scene.add(minibruteGroup);
+
+// === MOVING HEADS ===
+let movingHeads = [];
+const maxFixtures = 20;
+
+function createMovingHeadFixture(index) {
+  const masterGroup = new THREE.Group();
+  masterGroup.name = "HEAD_" + (index + 1);
+
+  const baseGeo = new THREE.BoxGeometry(0.7, 0.2, 0.7);
+  const base = new THREE.Mesh(baseGeo, bodyMat);
+  base.position.y = 0.1;
+  masterGroup.add(base);
+
+  const yokeGroup = new THREE.Group();
+  yokeGroup.name = "YOKE_GROUP";
+  masterGroup.add(yokeGroup);
+
+  const armGeo = new THREE.BoxGeometry(0.12, 0.7, 0.22);
+  const leftArm = new THREE.Mesh(armGeo, bodyMat);
+  leftArm.position.set(-0.3, -0.4, 0);
+  yokeGroup.add(leftArm);
+
+  const rightArm = leftArm.clone();
+  rightArm.position.x = 0.3;
+  yokeGroup.add(rightArm);
+
+  const headGroup = new THREE.Group();
+  headGroup.position.set(0, -0.4, 0);
+  yokeGroup.add(headGroup);
+
+  const headMainGeo = new THREE.CylinderGeometry(0.22, 0.25, 0.5, 16);
+  headMainGeo.rotateX(Math.PI / 2);
+  const headMain = new THREE.Mesh(headMainGeo, bodyMat);
+  headGroup.add(headMain);
+
+  const lensGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.02, 16);
+  lensGeo.rotateX(Math.PI / 2);
+  const lensMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const lens = new THREE.Mesh(lensGeo, lensMat);
+  lens.position.z = 0.26;
+  headGroup.add(lens);
+
+  const beamsContainer = new THREE.Group();
+  headGroup.add(beamsContainer);
+
+  const beamLength = 22;
+  const beamMaterials = [];
+  const beamMeshes = [];
+
+  for(let b=0; b<5; b++) {
+    const beamGeo = new THREE.ConeGeometry(0.4, beamLength, 16, 1, true);
+    beamGeo.translate(0, -beamLength/2, 0);
+    beamGeo.rotateX(-Math.PI/2);
+
+    const bMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffff, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+    });
+
+    const bMesh = new THREE.Mesh(beamGeo, bMat);
+    bMesh.position.z = 0.26;
+
+    // Beam harus dirender setelah Vidiotron supaya sorotan
+    // tetap terlihat ketika melewati layar video.
+    bMesh.renderOrder = 30;
+
+    beamsContainer.add(bMesh);
+
+    beamMaterials.push(bMat);
+    beamMeshes.push(bMesh);
+  }
+
+  return { masterGroup, yokeGroup, headGroup, lensMat, beamMaterials, beamMeshes, beamsContainer };
+}
+
+function initPool() {
+  for(let i=0; i<maxFixtures; i++) {
+    const hData = createMovingHeadFixture(i);
+    hData.masterGroup.visible = false;
+    scene.add(hData.masterGroup);
+    movingHeads.push(hData);
+  }
+}
+initPool();
+
+function deselectAll() {
+  selectedObject = null;
+  uploadedModel3D = null;
+  infoBox.style.display = "none";
+}
+
+function rebuildMovingHeads() {
+  const count = parseInt(headCountSlider.value);
+  const areaWidth = 16; 
+  for(let i=0; i<maxFixtures; i++) {
+    if(i < count) {
+      const posX = (i - (count - 1) / 2) * (areaWidth / Math.max(1, count - 1));
+      movingHeads[i].masterGroup.position.set(posX, 6.8, -0.5);
+      movingHeads[i].masterGroup.rotation.set(0,0,0);
+      movingHeads[i].masterGroup.visible = true;
+    } else {
+      movingHeads[i].masterGroup.visible = false;
+      if (selectedObject === movingHeads[i].masterGroup) deselectAll();
+    }
+  }
+}
+
+rebuildMovingHeads();
+rebuildParLeds();
+rebuildStroboBars();
+rebuildMartinStrobes();
+rebuildFanLights();
+
+// === EXPORT / IMPORT ===
+function exportPositionCode() {
+  const config = {
+    counts: {
+      trusses: parseInt(trussCountSlider.value),
+      circleTrusses: parseInt(circleTrussCountSlider.value),
+      heads: parseInt(headCountSlider.value),
+      pars: parseInt(parCountSlider.value),
+      bars: parseInt(barCountSlider.value),
+      martins: parseInt(martinCountSlider.value),
+      fans: parseInt(fanCountSlider.value)
+    },
+    fixtures: []
+  };
+
+  const poolLists = [trussPool, circleTrussPool];
+  poolLists.forEach(pool => {
+    pool.forEach(tr => {
+      if(tr.visible) {
+        config.fixtures.push({
+          name: tr.name,
+          x: Number(tr.position.x.toFixed(3)),
+          y: Number(tr.position.y.toFixed(3)),
+          z: Number(tr.position.z.toFixed(3)),
+          rx: Number(tr.rotation.x.toFixed(3)),
+          ry: Number(tr.rotation.y.toFixed(3)),
+          rz: Number(tr.rotation.z.toFixed(3))
+        });
+      }
+    });
+  });
+
+  for(let i = 0; i < movingHeads.length; i++) {
+    if(movingHeads[i].masterGroup.visible) {
+      const obj = movingHeads[i].masterGroup;
+      config.fixtures.push({
+        name: obj.name, x: Number(obj.position.x.toFixed(3)), y: Number(obj.position.y.toFixed(3)), z: Number(obj.position.z.toFixed(3)),
+        rx: Number(obj.rotation.x.toFixed(3)), ry: Number(obj.rotation.y.toFixed(3)), rz: Number(obj.rotation.z.toFixed(3))
+      });
+    }
+  }
+  for(let i = 0; i < parLeds.length; i++) {
+    if(parLeds[i].group.visible) {
+      const obj = parLeds[i].group;
+      config.fixtures.push({
+        name: obj.name, x: Number(obj.position.x.toFixed(3)), y: Number(obj.position.y.toFixed(3)), z: Number(obj.position.z.toFixed(3)),
+        rx: Number(obj.rotation.x.toFixed(3)), ry: Number(obj.rotation.y.toFixed(3)), rz: Number(obj.rotation.z.toFixed(3))
+      });
+    }
+  }
+  for(let i = 0; i < stroboBars.length; i++) {
+    if(stroboBars[i].unitGroup.visible) {
+      const obj = stroboBars[i].unitGroup;
+      config.fixtures.push({
+        name: obj.name, x: Number(obj.position.x.toFixed(3)), y: Number(obj.position.y.toFixed(3)), z: Number(obj.position.z.toFixed(3)),
+        rx: Number(obj.rotation.x.toFixed(3)), ry: Number(obj.rotation.y.toFixed(3)), rz: Number(obj.rotation.z.toFixed(3))
+      });
+    }
+  }
+  for(let i = 0; i < martinStrobes.length; i++) {
+    if(martinStrobes[i].group.visible) {
+      const obj = martinStrobes[i].group;
+      config.fixtures.push({
+        name: obj.name, x: Number(obj.position.x.toFixed(3)), y: Number(obj.position.y.toFixed(3)), z: Number(obj.position.z.toFixed(3)),
+        rx: Number(obj.rotation.x.toFixed(3)), ry: Number(obj.rotation.y.toFixed(3)), rz: Number(obj.rotation.z.toFixed(3))
+      });
+    }
+  }
+
+  for(let i = 0; i < fanLights.length; i++) {
+    if(fanLights[i].group.visible) {
+      const obj = fanLights[i].group;
+      config.fixtures.push({
+        name: obj.name, x: Number(obj.position.x.toFixed(3)), y: Number(obj.position.y.toFixed(3)), z: Number(obj.position.z.toFixed(3)),
+        rx: Number(obj.rotation.x.toFixed(3)), ry: Number(obj.rotation.y.toFixed(3)), rz: Number(obj.rotation.z.toFixed(3))
+      });
+    }
+  }
+
+  if(uploadedModel3D && uploadedModel3D.visible) {
+    const obj=uploadedModel3D;
+    config.fixtures.push({name:obj.name,x:Number(obj.position.x.toFixed(3)),y:Number(obj.position.y.toFixed(3)),z:Number(obj.position.z.toFixed(3)),rx:Number(obj.rotation.x.toFixed(3)),ry:Number(obj.rotation.y.toFixed(3)),rz:Number(obj.rotation.z.toFixed(3)),scale:Number(obj.scale.x.toFixed(3))});
+  }
+
+  const codeStr = JSON.stringify(config);
+  document.getElementById("posCodeInput").value = codeStr;
+  alert("Berhasil! Konfigurasi seluruh jumlah & posisi rig modular berhasil diexport.");
+}
+
+function importPositionCode() {
+  const codeStr = document.getElementById("posCodeInput").value.trim();
+  if (!codeStr) {
+    alert("Kotak kode masih kosong! Tempel kode konfigurasinya dulu.");
+    return;
+  }
+
+  try {
+    const config = JSON.parse(codeStr);
+    let targetCounts = config.counts;
+    
+    if (!targetCounts && config.fixtures) {
+      targetCounts = { trusses: 4, circleTrusses: 0, heads: 0, pars: 0, bars: 0, martins: 0, fans: 0 };
+      config.fixtures.forEach(item => {
+        if (item.name.startsWith("TRUSS_")) targetCounts.trusses++;
+        else if (item.name.startsWith("CIRCLE_TRUSS_")) targetCounts.circleTrusses++;
+        else if (item.name.startsWith("HEAD_")) targetCounts.heads++;
+        else if (item.name.startsWith("PAR_LED_")) targetCounts.pars++;
+        else if (item.name.startsWith("STROBO_BAR_")) targetCounts.bars++;
+        else if (item.name.startsWith("MARTIN_ATOMIC_")) targetCounts.martins++;
+        else if (item.name.startsWith("FAN_LIGHT_")) targetCounts.fans++;
+      });
+    }
+
+    if (targetCounts) {
+      if (targetCounts.trusses !== undefined) {
+        trussCountSlider.value = targetCounts.trusses;
+        trussLabel.textContent = targetCounts.trusses;
+        rebuildTrussPool();
+      }
+      if (targetCounts.circleTrusses !== undefined) {
+        circleTrussCountSlider.value = targetCounts.circleTrusses;
+        circleTrussLabel.textContent = targetCounts.circleTrusses;
+        rebuildCircleTrussPool();
+      }
+      if (targetCounts.heads !== undefined) {
+        headCountSlider.value = targetCounts.heads;
+        headLabel.textContent = targetCounts.heads;
+        rebuildMovingHeads();
+      }
+      if (targetCounts.pars !== undefined) {
+        parCountSlider.value = targetCounts.pars;
+        parLabel.textContent = targetCounts.pars;
+        rebuildParLeds();
+      }
+      if (targetCounts.bars !== undefined) {
+        barCountSlider.value = targetCounts.bars;
+        barLabel.textContent = targetCounts.bars;
+        rebuildStroboBars();
+      }
+      if (targetCounts.martins !== undefined) {
+        martinCountSlider.value = targetCounts.martins;
+        martinLabel.textContent = targetCounts.martins;
+        rebuildMartinStrobes();
+      }
+      if (targetCounts.fans !== undefined) {
+        fanCountSlider.value = Math.max(0, Math.min(maxFanLights, targetCounts.fans));
+        fanLabel.textContent = fanCountSlider.value;
+        rebuildFanLights();
+      }
+    }
+
+    if (config.fixtures && Array.isArray(config.fixtures)) {
+      config.fixtures.forEach(item => {
+        let targetObj = null;
+        scene.traverse(child => {
+          if (child.name === item.name && child.visible) {
+            targetObj = child;
+          }
+        });
+
+        if (targetObj) {
+          targetObj.position.set(item.x, item.y, item.z);
+          targetObj.rotation.set(item.rx, item.ry, item.rz);
+        }
+      });
+    }
+
+    deselectAll();
+    alert("Berhasil! Jumlah dan posisi seluruh rangka modular & lampu panggung otomatis disesuaikan.");
+  } catch (err) {
+    console.error(err);
+    alert("Format kode salah atau tidak valid!");
+  }
+}
+
+// === RAYCASTER SELECTION ===
+window.addEventListener('pointerdown', (e) => {
+  if (e.clientY > container.clientHeight) return;
+
+  mouse.x = (e.clientX / container.clientWidth) * 2 - 1;
+  mouse.y = -(e.clientY / container.clientHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  const targets = [];
+  if (minibruteGroup.visible) targets.push(minibruteGroup);
+  parLeds.forEach(p => { if(p.group.visible) targets.push(p.group); });
+  stroboBars.forEach(b => { if(b.unitGroup.visible) targets.push(b.unitGroup); });
+  martinStrobes.forEach(m => { if(m.group.visible) targets.push(m.group); });
+  fanLights.forEach(f => { if(f.group.visible) targets.push(f.group); });
+  movingHeads.forEach(h => { if(h.masterGroup.visible) targets.push(h.masterGroup); });
+  trussPool.forEach(tr => { if(tr.visible) targets.push(tr); });
+  circleTrussPool.forEach(tr => { if(tr.visible) targets.push(tr); });
+  if (vidiotron && vidiotron.visible) targets.push(vidiotron);
+  uploadedModels3D.forEach(model => { if (model && model.visible) targets.push(model); });
+
+  const intersects = raycaster.intersectObjects(targets, true);
+
+  if (intersects.length > 0) {
+    let root = intersects[0].object;
+    while (root.parent && root.parent !== scene) {
+      root = root.parent;
+    }
+    selectObject(root);
+  }
+});
+
+function selectObject(obj) {
+  if(!obj) return;
+  deselectAll();
+  selectedObject = obj;
+
+  if(obj.userData && obj.userData.isUploadedModel && uploadedModels3D.includes(obj)){
+    uploadedModel3D = obj;
+    infoBox.style.display = "block";
+    infoBox.innerHTML = `Selected: <b>${obj.name}</b><br>Model 3D aktif.`;
+    if(typeof model3DStatus !== "undefined" && model3DStatus){
+      model3DStatus.textContent = `MODEL AKTIF • ${obj.name}`;
+    }
+    return;
+  }
+
+  infoBox.style.display = "block";
+  infoBox.innerHTML = `Selected: <b>${obj.name}</b><br>Geser via D-Pad, lalu klik EXPORT ALL.`;
+}
+
+function moveSelectedDevice(direction) {
+  if (!selectedObject) {
+    alert("Klik/Pilih salah satu objek panggung terlebih dahulu!");
+    return;
+  }
+  
+  const step = 0.4; 
+  switch(direction) {
+    case 'forward':  selectedObject.position.z -= step; break; 
+    case 'backward': selectedObject.position.z += step; break; 
+    case 'left':     selectedObject.position.x -= step; break; 
+    case 'right':    selectedObject.position.x += step; break; 
+    case 'up':       selectedObject.position.y += step; break; 
+    case 'down':     selectedObject.position.y -= step; break; 
+  }
+}
+
+function rotateSelectedDevice(axis, angleDeg) {
+  if (!selectedObject) {
+    alert("Klik/Pilih salah satu objek panggung terlebih dahulu!");
+    return;
+  }
+
+  const rad = (Number(angleDeg) * Math.PI) / 180;
+  const a = String(axis).toLowerCase();
+
+  // MODEL 3D UPLOAD:
+  // gunakan WORLD axis supaya X/Y/Z konsisten dengan arah panggung,
+  // bukan local axis mesh yang bisa berbeda karena orientasi file.
+  if (selectedObject.userData && selectedObject.userData.isUploadedModel) {
+    const worldAxis =
+      a === 'x' ? new THREE.Vector3(1, 0, 0) :
+      a === 'y' ? new THREE.Vector3(0, 1, 0) :
+      a === 'z' ? new THREE.Vector3(0, 0, 1) : null;
+
+    if (!worldAxis) return;
+
+    selectedObject.rotateOnWorldAxis(worldAxis, rad);
+    selectedObject.updateMatrixWorld(true);
+    return;
+  }
+
+  // LAMPU / OBJEK PANGGUNG LAIN: pertahankan perilaku axis yang sudah ada.
+  switch (a) {
+    case 'x':
+      selectedObject.rotation.x += rad;
+      break;
+    case 'y':
+      selectedObject.rotation.y += rad;
+      break;
+    case 'z':
+      selectedObject.rotation.z += rad;
+      break;
+    default:
+      return;
+  }
+
+  selectedObject.updateMatrixWorld(true);
+}
+
+function resetRotation() {
+  if (!selectedObject) return;
+
+  if (selectedObject.userData && selectedObject.userData.isUploadedModel) {
+    if (selectedObject.userData.initialQuaternion) {
+      selectedObject.quaternion.copy(selectedObject.userData.initialQuaternion);
+    } else {
+      selectedObject.rotation.set(0, 0, 0);
+    }
+  } else {
+    selectedObject.rotation.set(0, 0, 0);
+  }
+
+  selectedObject.updateMatrixWorld(true);
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === "Escape") deselectAll();
+});
+
+const miniBtn = document.getElementById("miniBruteBtn");
+let miniBruteActive = false;
+let miniBruteIntensity = 0;
+const miniBruteFadeSpeed = 0.08;
+
+function toggleMiniBrute(e) {
+  e.preventDefault();
+  miniBruteActive = !miniBruteActive;
+  miniBtn.classList.toggle('active', miniBruteActive);
+}
+
+miniBtn.addEventListener("click", toggleMiniBrute);
+
+// === SLIDERS EVENT ===
+trussCountSlider.oninput = function(){
+  trussLabel.textContent = this.value;
+  rebuildTrussPool();
+};
+circleTrussCountSlider.oninput = function(){
+  circleTrussLabel.textContent = this.value;
+  rebuildCircleTrussPool();
+};
+headCountSlider.oninput = function(){ 
+  headLabel.textContent = this.value; 
+  rebuildMovingHeads(); 
+};
+parCountSlider.oninput = function(){
+  parLabel.textContent = this.value;
+  rebuildParLeds();
+};
+barCountSlider.oninput = function(){
+  barLabel.textContent = this.value;
+  rebuildStroboBars();
+};
+martinCountSlider.oninput = function(){
+  martinLabel.textContent = this.value;
+  rebuildMartinStrobes();
+};
+fanCountSlider.oninput = function(){
+  fanLabel.textContent = this.value;
+  rebuildFanLights();
+};
+fanSpeedSlider.oninput = function(){
+  fanSpeedLabel.textContent = (parseFloat(this.value) / 10).toFixed(1);
+};
+fanBrightnessSlider.oninput = function(){
+  fanBrightLabel.textContent = this.value;
+};
+
+let fanRgbMode = true;
+let fanRotateActive = true;
+fanRgbBtn.addEventListener("click", () => {
+  fanRgbMode = !fanRgbMode;
+  fanRgbBtn.classList.toggle("active", fanRgbMode);
+  fanRgbBtn.textContent = fanRgbMode ? "RGB AUTO" : "RGB HOLD";
+});
+fanRotateBtn.addEventListener("click", () => {
+  fanRotateActive = !fanRotateActive;
+  fanRotateBtn.classList.toggle("active", fanRotateActive);
+  fanRotateBtn.textContent = fanRotateActive ? "ROTATE ON" : "ROTATE OFF";
+});
+
+let moveMode = "fan"; let strobe = "off"; let beamMode = "normal";
+
+const prismRotateBtn = document.getElementById("prismRotateBtn");
+prismRotateBtn.classList.add("active");
+prismRotateBtn.addEventListener("click", () => {
+  prismRotateActive = !prismRotateActive;
+  prismRotateBtn.classList.toggle("active", prismRotateActive);
+  prismRotateBtn.textContent = prismRotateActive ? "PRISM ROTATE ON" : "PRISM ROTATE OFF";
+});
+const stroboFxList = ["rainbow", "chase", "alternate", "strobe_white", "bounce", "fire", "scan_matrix", "dual_split", "pulse_glow"];
+let stroboFxMode = stroboFxList[0]; 
+let lastFxSwitchTime = 0;
+
+let moveT = 0; let t = 0; let paused = false;
+let prismRotateActive = true;
+let prismRotateAngle = 0;
+let customMoveXExpr = "Math.sin(t*2 + i*0.4)*4";
+let customMoveYExpr = "Math.cos(t*2 + i*0.4)*3";
+
+function applyCustomMovement(){
+  customMoveXExpr = document.getElementById("customX").value || "0";
+  customMoveYExpr = document.getElementById("customY").value || "0";
+  moveMode = "custom";
+}
+
+function safeEval(expr, vars){
+  try{ return Function("t","i","sp","headCount","Math",`return (${expr});`)(vars.t, vars.i, vars.sp, vars.headCount, Math); }catch(e){ return 0; }
+}
+
+function strobeState(i, totalCount = parseInt(headCountSlider.value)){
+  let sp = document.getElementById("strobeSpeed").value/10;
+  switch(strobe){
+    case "off": return true;
+    case "slow": return Math.floor(t*2*sp)%2===0;
+    case "fast": return Math.floor(t*8*sp)%2===0;
+    case "pulse": return Math.sin(t*5*sp)>0;
+    case "chase": return Math.floor(t*3*sp+i)%2===0;
+    case "single":{
+      let cycle = Math.floor(t*(10*sp)); let active = cycle%totalCount;
+      return Math.floor(cycle/totalCount)%2===0 ? (i===active) : (i===totalCount-1-active);
+    }
+    case "single_in":{
+      let cycle = Math.floor(t*(10*sp)); let half = Math.max(1,Math.floor(totalCount/2)); let step = cycle%(half+1);
+      return i===step || i===totalCount-1-step;
+    }
+    case "left_right": {
+      const half = Math.ceil(totalCount / 2);
+      const phase = Math.floor(t * 3 * sp) % 2;
+      const isLeft = i < half;
+      return phase === 0 ? isLeft : !isLeft;
+    }
+    default: return true;
+  }
+}
+
+// === EXTRA MOVEMENT MODES ===
+// Triangle wave 0..1..0 for smooth back-and-forth motion.
+function moveTriangle(x){
+  const phase = ((x % 2) + 2) % 2;
+  return phase <= 1 ? phase : 2 - phase;
+}
+
+function moveX(i){
+  let sp = document.getElementById("moveSpeed").value/10;
+  let headCount = parseInt(headCountSlider.value);
+  const circleSpeed = moveT * sp * 3;
+  const center = (headCount - 1) / 2;
+  const mirrorDistance = Math.abs(i - center);
+  const mirrorSide = i < center ? -1 : 1;
+  switch(moveMode){
+    case "fan": return (i-(headCount-1)/2) * (Math.PI / (headCount + 2));
+    case "wave": return Math.sin(moveT*sp*4 + i*0.5) * 0.8;
+    case "pargoy": return Math.sin(moveT*sp*3 + i) * 0.9;
+    case "crazy": return Math.sin(moveT*sp*5+i)*0.8 + Math.cos(t*sp+i)*0.5;
+    case "all_lr": return Math.sin(moveT*sp*3) * 0.4;
+    case "circle": return Math.cos(circleSpeed + i * 0.45) * 0.85;
+    // CIBAT = odd heads do CIRCLE, even heads do BABAT.
+    case "cibat": return (i % 2 === 0)
+      ?Math.cos(t*2 )*0.6
+      : Math.sin(moveT*sp*2) * 0.4;
+    // MIRROR CIRCLE = the two sides rotate as mirrored pairs toward the center.
+    case "mirror_circle": return Math.cos(circleSpeed + mirrorDistance * 0.75) * 0.85 * mirrorSide;
+    // CIRCLE ↔ = circle motion reverses direction at both ends.
+    case "circle_bounce": {
+      const phase = moveTriangle(moveT*sp*0.48) * Math.PI * 2;
+      return Math.cos(phase + i * 0.45) * 0.85;
+    }
+    // MIRROR CIRCLE ↔ = mirrored circle motion travelling in and out.
+    case "mirror_circle_bounce": {
+      const phase = moveTriangle(moveT*sp*0.48) * Math.PI * 2;
+      return Math.cos(phase + mirrorDistance * 0.75) * 0.85 * mirrorSide;
+    }
+    case "zigzag": return Math.sin(moveT*sp*5) * 0.8 * ((i % 2 === 0) ? 1 : -1);
+    case "zigzag_ud": return Math.sin(moveT*sp * 2) * 0.5;
+    case "concert": return Math.sin(moveT*sp*4) * 0.3;
+    case "babat": return Math.sin(moveT*sp*2) * 0.4;
+    case "infinity": return Math.sin(moveT*sp*2.5 + i*0.5)*0.8;
+    case "custom": return safeEval(customMoveXExpr,{t, i, sp, headCount});
+    default: return 0;
+  }
+}
+
+function moveY(i){
+  let sp = document.getElementById("moveSpeed").value/10;
+  let headCount = parseInt(headCountSlider.value);
+  const circleSpeed = moveT * sp * 3;
+  const center = (headCount - 1) / 2;
+  const mirrorDistance = Math.abs(i - center);
+  switch(moveMode){
+    case "wave": return (Math.sin(moveT*sp*2) * 0.5); 
+    case "pargoy": return (Math.cos(moveT*sp*4) * 0.4);
+    case "updown": return Math.sin(moveT*sp*4 + i*0.5) * 0.8;
+    case "all_updown": return Math.sin(moveT*sp*4) * 0.2;
+    case "crazy": return Math.cos(moveT*sp*6+i) * 0.6;
+    case "circle": return Math.sin(circleSpeed + i * 0.45) * 0.6;
+    case "cibat": return (i % 2 === 0)
+      ?Math.sin(t*2 )*0.5
+      : Math.sin(moveT*sp*4) * 0.1;
+    case "mirror_circle": return Math.sin(circleSpeed + mirrorDistance * 0.75) * 0.6;
+    case "circle_bounce": {
+      const phase = moveTriangle(moveT*sp*0.48) * Math.PI * 2;
+      return Math.sin(phase + i * 0.45) * 0.6;
+    }
+    case "mirror_circle_bounce": {
+      const phase = moveTriangle(moveT*sp*0.48) * Math.PI * 2;
+      return Math.sin(phase + mirrorDistance * 0.75) * 0.6;
+    }
+    case "zigzag": return 0;
+    case "zigzag_ud": return Math.sin(moveT*sp*5) * 0.8 * ((i % 2 === 0) ? 1 : -1);
+    case "concert": return -0.2 + Math.cos(moveT*sp*1)*0.8;
+    case "babat": return Math.sin(moveT*sp*4) * 0.1;
+    case "infinity": return Math.sin(moveT*sp*5.0 + i*0.5)*0.4;
+    case "custom": return safeEval(customMoveYExpr,{t, i, sp, headCount});
+    default: return 0;
+  }
+}
+
+function getBeamColor(index) {
+  const oddColor = new THREE.Color(colorInput.value || "#ffffff");
+  const evenColor = new THREE.Color(colorInput2.value || "#ffff00");
+  return index % 2 === 0 ? oddColor : evenColor;
+}
+
+
+// === UPLOAD MODEL 3D + COPY + ZIP SUPPORT ===
+const model3DFile = document.getElementById("model3DFile");
+const model3DCopy = document.getElementById("model3DCopy");
+const model3DDelete = document.getElementById("model3DDelete");
+const model3DScale = document.getElementById("model3DScale");
+const model3DScaleVal = document.getElementById("model3DScaleVal");
+const model3DReset = document.getElementById("model3DReset");
+const model3DStatus = document.getElementById("model3DStatus");
+
+let uploadedModel3D = null;
+let uploadedModels3D = [];
+let uploadedModelURL = null;
+let uploadedModelBlobURLs = [];
+
+function disposeUploadedRoot(root){
+  if(!root) return;
+  scene.remove(root);
+  root.traverse(obj=>{
+    if(obj.geometry) obj.geometry.dispose();
+    if(obj.material){
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      mats.forEach(m=>{
+        if(m && m.map) {
+          // Texture disposal is intentionally avoided here because ZIP models
+          // may share texture objects through cloned materials.
+        }
+        if(m && m.dispose) m.dispose();
+      });
+    }
+  });
+}
+
+function revokeModelBlobURLs(){
+  uploadedModelBlobURLs.forEach(url=>{
+    try{ URL.revokeObjectURL(url); }catch(e){}
+  });
+  uploadedModelBlobURLs = [];
+}
+
+function clearUploadedModel(){
+  uploadedModels3D.forEach(disposeUploadedRoot);
+  uploadedModels3D = [];
+  uploadedModel3D = null;
+
+  if(uploadedModelURL){
+    try{ URL.revokeObjectURL(uploadedModelURL); }catch(e){}
+    uploadedModelURL = null;
+  }
+  revokeModelBlobURLs();
+
+  selectedObject = null;
+  infoBox.style.display = "none";
+}
+
+function selectUploadedModel(root){
+  if(!root) return;
+  selectedObject = root;
+  uploadedModel3D = root;
+  infoBox.style.display = "block";
+  infoBox.innerHTML = `Selected: <b>${root.name}</b><br>Model 3D aktif.`;
+}
+
+// === MATERIAL MODEL 3D: MATTE / NO EMISSION ===
+// Model tetap menerima cahaya dan bayangan dari scene,
+// tetapi tidak mempunyai efek "menyala" sendiri atau highlight berlebihan.
+function configureUploadedModelMaterial(material){
+  if(!material) return material;
+
+  // Pastikan model tidak memancarkan cahaya sendiri.
+  if("emissive" in material && material.emissive){
+    material.emissive.setRGB(0,0,0);
+  }
+  if("emissiveIntensity" in material){
+    material.emissiveIntensity = 0;
+  }
+
+  // Hilangkan kilap berlebihan agar detail permukaan tetap terlihat dekat.
+  if("metalness" in material) material.metalness = 0;
+  if("roughness" in material) material.roughness = 0.92;
+  if("specular" in material && material.specular){
+    material.specular.setRGB(0,0,0);
+  }
+  if("shininess" in material) material.shininess = 0;
+
+  material.needsUpdate = true;
+  return material;
+}
+
+function prepareUploadedModel(root, file, clearFirst=false){
+  if(!root) throw new Error("Model kosong.");
+
+  // Penanda khusus model upload supaya axis rotasinya tidak mengikuti
+  // sistem axis moving-head/lampu. Model memakai WORLD X/Y/Z.
+  root.userData.isUploadedModel = true;
+  if(!root.userData.initialQuaternion){
+    root.userData.initialQuaternion = root.quaternion.clone();
+  }
+
+  if(clearFirst) clearUploadedModel();
+
+  root.name = `UPLOADED_MODEL_3D_${uploadedModels3D.length + 1}`;
+  root.position.set(0, 3, 0);
+  root.rotation.set(0,0,0);
+  root.scale.setScalar(parseFloat(model3DScale.value) || 1);
+
+  root.traverse(obj=>{
+    if(obj.isMesh){
+      // Model boleh menerima bayangan dan melempar bayangan.
+      // Tidak ada emissive/glow dari material model.
+      obj.castShadow = true;
+      obj.receiveShadow = true;
+
+      if(obj.material){
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        mats.forEach(m=>{
+          if(m){
+            configureUploadedModelMaterial(m);
+            if(m.side === undefined) m.side = THREE.DoubleSide;
+          }
+        });
+      }
+    }
+  });
+
+  scene.add(root);
+  uploadedModels3D.push(root);
+  selectUploadedModel(root);
+
+  model3DStatus.textContent =
+    `MODEL AKTIF • ${file.name} • ${uploadedModels3D.length} MODEL`;
+}
+
+function findZipFile(zip, extension){
+  const wanted = extension.toLowerCase();
+  const entries = Object.values(zip.files).filter(f=>!f.dir);
+  return entries.find(f=>f.name.toLowerCase().endsWith(wanted)) || null;
+}
+
+function findZipAsset(zip, refName){
+  if(!refName) return null;
+  const clean = refName.replace(/\\/g,"/").replace(/^\.?\//,"");
+  const lower = clean.toLowerCase();
+
+  // Exact path first.
+  for(const f of Object.values(zip.files)){
+    if(!f.dir && f.name.toLowerCase() === lower) return f;
+  }
+
+  // Then suffix match for files inside a folder.
+  for(const f of Object.values(zip.files)){
+    if(!f.dir && f.name.toLowerCase().endsWith("/" + lower)) return f;
+  }
+
+  // Finally basename match.
+  const base = lower.split("/").pop();
+  for(const f of Object.values(zip.files)){
+    if(!f.dir && f.name.toLowerCase().split("/").pop() === base) return f;
+  }
+  return null;
+}
+
+async function makeZipBlobURLMap(zip){
+  const map = new Map();
+
+  for(const f of Object.values(zip.files)){
+    if(f.dir) continue;
+    const lower = f.name.toLowerCase();
+
+    let type = "application/octet-stream";
+    if(lower.endsWith(".png")) type = "image/png";
+    else if(lower.endsWith(".jpg") || lower.endsWith(".jpeg")) type = "image/jpeg";
+    else if(lower.endsWith(".webp")) type = "image/webp";
+    else if(lower.endsWith(".gif")) type = "image/gif";
+    else if(lower.endsWith(".bmp")) type = "image/bmp";
+    else if(lower.endsWith(".ktx2")) type = "image/ktx2";
+
+    const blob = await f.async("blob");
+    const url = URL.createObjectURL(new Blob([blob], {type}));
+    uploadedModelBlobURLs.push(url);
+
+    const normalized = f.name.replace(/\\/g,"/").replace(/^\.?\//,"").toLowerCase();
+    map.set(normalized, url);
+    map.set(normalized.split("/").pop(), url);
+  }
+  return map;
+}
+
+function rewriteMtlTextureLines(mtlText, zip, blobMap){
+  return mtlText.split(/\r?\n/).map(line=>{
+    const match = line.match(/^(\s*(?:map_Kd|map_Ks|map_Ke|map_d|bump|map_Bump|norm|disp|decal)\s+)(.+?)\s*$/i);
+    if(!match) return line;
+
+    const prefix = match[1];
+    const value = match[2].trim();
+
+    // MTL options are uncommon in simple models. For option-heavy lines,
+    // replace only the final filename token.
+    const tokens = value.split(/\s+/);
+    const ref = tokens[tokens.length - 1].replace(/^["']|["']$/g,"");
+    const asset = findZipAsset(zip, ref);
+    if(!asset) return line;
+
+    const normalized = asset.name.replace(/\\/g,"/").replace(/^\.?\//,"").toLowerCase();
+    const url = blobMap.get(normalized) || blobMap.get(normalized.split("/").pop());
+    if(!url) return line;
+
+    tokens[tokens.length - 1] = url;
+    return prefix + tokens.join(" ");
+  }).join("\n");
+}
+
+async function loadObjFromZip(zip, file){
+  const objEntry = findZipFile(zip, ".obj");
+  if(!objEntry) throw new Error("ZIP tidak berisi file .OBJ.");
+
+  const objText = await objEntry.async("string");
+  const loader = new THREE.OBJLoader();
+
+  const mtlEntry = findZipFile(zip, ".mtl");
+  if(mtlEntry && typeof THREE.MTLLoader === "function"){
+    const blobMap = await makeZipBlobURLMap(zip);
+    let mtlText = await mtlEntry.async("string");
+    mtlText = rewriteMtlTextureLines(mtlText, zip, blobMap);
+
+    const mtlLoader = new THREE.MTLLoader();
+    const materials = mtlLoader.parse(mtlText, "");
+    materials.preload();
+    loader.setMaterials(materials);
+  }
+
+  return loader.parse(objText);
+}
+
+async function loadGltfFromZip(zip){
+  const gltfEntry = findZipFile(zip, ".gltf");
+  if(!gltfEntry) throw new Error("ZIP tidak berisi file .GLTF.");
+
+  const jsonText = await gltfEntry.async("string");
+  const json = JSON.parse(jsonText);
+  const blobMap = await makeZipBlobURLMap(zip);
+
+  function resolveUri(uri){
+    if(!uri || uri.startsWith("data:") || uri.startsWith("blob:")) return uri;
+    const decoded = decodeURIComponent(uri).replace(/\\/g,"/").replace(/^\.?\//,"").toLowerCase();
+    return blobMap.get(decoded)
+      || blobMap.get(decoded.split("/").pop())
+      || uri;
+  }
+
+  if(Array.isArray(json.buffers)){
+    json.buffers.forEach(b=>{ if(b.uri) b.uri = resolveUri(b.uri); });
+  }
+  if(Array.isArray(json.images)){
+    json.images.forEach(img=>{ if(img.uri) img.uri = resolveUri(img.uri); });
+  }
+
+  const loader = new THREE.GLTFLoader();
+  return await new Promise((resolve,reject)=>{
+    loader.parse(JSON.stringify(json), "", gltf=>resolve(gltf.scene || gltf.scenes[0]), reject);
+  });
+}
+
+function parseNumberList(block){
+  if(!block) return [];
+  return (block.match(/-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/g) || []).map(Number);
+}
+
+function extractAsciiFBXArray(text, key){
+  // ASCII FBX arrays are often written as: key: *N { a: ... }
+  // followed immediately by the closing brace of the Geometry block.
+  const re = new RegExp(
+    key + "\\s*:\\s*\\*\\d+\\s*\\{\\s*a\\s*:\\s*([\\s\\S]*?)\\s*\\}",
+    "m"
+  );
+  const m = text.match(re);
+  return m ? parseNumberList(m[1]) : [];
+}
+
+function parseAsciiFBX(text){
+  // Prisma3D/OBJ-to-FBX ASCII files commonly start with this header.
+  if(!/^\s*;\s*FBX/i.test(text)){
+    throw new Error("FBX ASCII header tidak dikenali.");
+  }
+
+  const vertices = extractAsciiFBXArray(text, "Vertices");
+  const poly = extractAsciiFBXArray(text, "PolygonVertexIndex");
+  if(vertices.length < 9 || poly.length < 3){
+    throw new Error("FBX ASCII tidak memiliki geometry yang valid.");
+  }
+
+  const positions = [];
+  const materialIndices = [];
+  let polygon = [];
+  let polygonNo = 0;
+
+  function emitPolygon(indices, matIndex){
+    if(indices.length < 3) return;
+    // FBX polygon indices use a negative final index: -(index + 1).
+    const clean = indices.map(v => v < 0 ? -v - 1 : v);
+    for(let i=1; i<clean.length-1;i++){
+      const tri = [clean[0], clean[i], clean[i+1]];
+      tri.forEach(idx=>{
+        const base = idx * 3;
+        if(base < 0 || base + 2 >= vertices.length) return;
+        positions.push(vertices[base], vertices[base+1], vertices[base+2]);
+      });
+      materialIndices.push(matIndex);
+    }
+  }
+
+  // Material assignment is ByPolygon in the Prisma3D-generated file.
+  const matBlock = text.match(/LayerElementMaterial:[\s\S]*?Materials:\s*\*\d+\s*\{\s*a:\s*([\s\S]*?)\s*\}/m);
+  const polygonMaterials = matBlock ? parseNumberList(matBlock[1]) : [];
+
+  for(const v of poly){
+    polygon.push(v);
+    if(v < 0){
+      emitPolygon(polygon, polygonMaterials[polygonNo] ?? 0);
+      polygon = [];
+      polygonNo++;
+    }
+  }
+  if(polygon.length) emitPolygon(polygon, polygonMaterials[polygonNo] ?? 0);
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions,3));
+  geometry.computeVertexNormals();
+
+  // Read DiffuseColor from ASCII Material blocks.
+  const colors = [];
+  const materialRe = /Material:\s*\d+\s*,\s*"[^"]*"\s*,\s*""\s*\{([\s\S]*?)\n\s*\}/g;
+  let mm;
+  while((mm = materialRe.exec(text))){
+    const cm = mm[1].match(/P:\s*"DiffuseColor"[^\n]*?,\s*(-?(?:\d+\.?\d*|\.\d+))\s*,\s*(-?(?:\d+\.?\d*|\.\d+))\s*,\s*(-?(?:\d+\.?\d*|\.\d+))/);
+    if(cm){
+      colors.push(new THREE.Color(
+        Math.max(0,Math.min(1,Number(cm[1]))),
+        Math.max(0,Math.min(1,Number(cm[2]))),
+        Math.max(0,Math.min(1,Number(cm[3])))
+      ));
+    }
+  }
+  if(!colors.length) colors.push(new THREE.Color(0.55,0.58,0.62));
+
+  const materials = colors.map(c=>{
+    const m = new THREE.MeshPhongMaterial({color:c, side:THREE.DoubleSide, shininess:8});
+    return configureUploadedModelMaterial(m);
+  });
+
+  // Create groups for contiguous material runs.
+  let start = 0;
+  let current = materialIndices.length ? materialIndices[0] : 0;
+  for(let i=1;i<=materialIndices.length;i++){
+    if(i === materialIndices.length || materialIndices[i] !== current){
+      geometry.addGroup(start * 3, (i-start) * 3, Math.max(0,Math.min(current,materials.length-1)));
+      start = i;
+      current = materialIndices[i] ?? current;
+    }
+  }
+
+  const mesh = new THREE.Mesh(geometry, materials.length === 1 ? materials[0] : materials);
+  mesh.name = "FBX_ASCII_MODEL";
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+
+  const root = new THREE.Group();
+  root.name = "FBX_ASCII_ROOT";
+  root.add(mesh);
+  return root;
+}
+
+async function loadFbxBuffer(buffer, manager){
+  const bytes = new Uint8Array(buffer);
+  const preview = new TextDecoder().decode(bytes.subarray(0, Math.min(bytes.length, 256)));
+
+  // ASCII FBX from Prisma3D / OBJ converters.
+  if(/^\s*;\s*FBX/i.test(preview)){
+    const text = new TextDecoder().decode(bytes);
+    return parseAsciiFBX(text);
+  }
+
+  // Binary FBX fallback through Three.js FBXLoader.
+  const loader = new THREE.FBXLoader(manager);
+  return await new Promise((resolve,reject)=>{
+    try{ loader.parse(buffer, "", resolve, reject); }
+    catch(err){ reject(err); }
+  });
+}
+
+async function loadFbxFromZip(zip){
+  const fbxEntry = findZipFile(zip, ".fbx");
+  if(!fbxEntry) throw new Error("ZIP tidak berisi file .FBX.");
+
+  const buffer = await fbxEntry.async("arraybuffer");
+  const blobMap = await makeZipBlobURLMap(zip);
+  const manager = new THREE.LoadingManager();
+  manager.setURLModifier(url=>{
+    try{
+      const decoded = decodeURIComponent(url).replace(/\\/g,"/").replace(/^\.\//,"").toLowerCase();
+      return blobMap.get(decoded) || blobMap.get(decoded.split("/").pop()) || url;
+    }catch(e){ return url; }
+  });
+  return await loadFbxBuffer(buffer, manager);
+}
+
+async function loadModelFromZip(file){
+  if(typeof JSZip === "undefined"){
+    throw new Error("ZIP loader belum siap. Periksa koneksi internet lalu reload game.");
+  }
+
+  const zip = await JSZip.loadAsync(await file.arrayBuffer());
+
+  const fbxEntry = findZipFile(zip, ".fbx");
+  if(fbxEntry) return await loadFbxFromZip(zip);
+
+  const glbEntry = findZipFile(zip, ".glb");
+  if(glbEntry){
+    const buffer = await glbEntry.async("arraybuffer");
+    const loader = new THREE.GLTFLoader();
+    return await new Promise((resolve,reject)=>{
+      loader.parse(buffer, "", gltf=>resolve(gltf.scene || gltf.scenes[0]), reject);
+    });
+  }
+
+  const objEntry = findZipFile(zip, ".obj");
+  if(objEntry) return await loadObjFromZip(zip, file);
+
+  const gltfEntry = findZipFile(zip, ".gltf");
+  if(gltfEntry) return await loadGltfFromZip(zip);
+
+  throw new Error("ZIP tidak berisi .FBX, .OBJ, .GLB, atau .GLTF.");
+}
+
+model3DFile.addEventListener("change", async ()=>{
+  const file = model3DFile.files && model3DFile.files[0];
+  if(!file) return;
+
+  clearUploadedModel();
+  model3DStatus.textContent = `MEMUAT • ${file.name}`;
+
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  try{
+    if(ext === "zip"){
+      const root = await loadModelFromZip(file);
+      prepareUploadedModel(root, file, false);
+
+    } else if(ext === "glb"){
+      const buffer = await file.arrayBuffer();
+      const loader = new THREE.GLTFLoader();
+
+      await new Promise((resolve,reject)=>{
+        loader.parse(buffer, "", gltf=>{
+          prepareUploadedModel(gltf.scene || gltf.scenes[0], file, false);
+          resolve();
+        }, reject);
+      });
+
+    } else if(ext === "gltf"){
+      const text = await file.text();
+      const loader = new THREE.GLTFLoader();
+
+      await new Promise((resolve,reject)=>{
+        loader.parse(text, "", gltf=>{
+          prepareUploadedModel(gltf.scene || gltf.scenes[0], file, false);
+          resolve();
+        }, reject);
+      });
+
+    } else if(ext === "fbx"){
+      const buffer = await file.arrayBuffer();
+      const root = await loadFbxBuffer(buffer);
+      prepareUploadedModel(root, file, false);
+
+    } else if(ext === "obj"){
+      const text = await file.text();
+      const loader = new THREE.OBJLoader();
+      prepareUploadedModel(loader.parse(text), file, false);
+
+    } else {
+      model3DStatus.textContent = "Format belum didukung. Gunakan GLB, GLTF, OBJ, FBX, atau ZIP.";
+      return;
+    }
+
+  }catch(err){
+    console.error("MODEL 3D ERROR:", err);
+    clearUploadedModel();
+    model3DStatus.textContent =
+      `GAGAL • ${err && err.message ? err.message : "File model 3D tidak bisa dibaca."}`;
+  }
+});
+
+// COPY MODEL 3D
+if(model3DCopy){
+  model3DCopy.addEventListener("click", ()=>{
+    if(!uploadedModel3D){
+      model3DStatus.textContent = "Tidak ada model 3D yang dipilih untuk dicopy.";
+      return;
+    }
+
+    const copy = uploadedModel3D.clone(true);
+    const count = uploadedModels3D.length + 1;
+    copy.name = `UPLOADED_MODEL_3D_${count}`;
+
+    // Beri jarak supaya copy langsung terlihat dan tidak menumpuk.
+    copy.position.copy(uploadedModel3D.position);
+    copy.position.x += 2.0;
+
+    // Clone material agar perubahan pada copy tidak ikut mengubah model asli.
+    copy.traverse(obj=>{
+      if(obj.isMesh){
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+
+        if(obj.material){
+          if(Array.isArray(obj.material)){
+            obj.material = obj.material.map(m=>{
+              const c = m && m.clone ? m.clone() : m;
+              return configureUploadedModelMaterial(c);
+            });
+          }else if(obj.material.clone){
+            obj.material = configureUploadedModelMaterial(obj.material.clone());
+          }else{
+            obj.material = configureUploadedModelMaterial(obj.material);
+          }
+        }
+      }
+    });
+
+    scene.add(copy);
+    uploadedModels3D.push(copy);
+    selectUploadedModel(copy);
+
+    model3DStatus.textContent =
+      `MODEL DICOPY • ${copy.name} • ${uploadedModels3D.length} MODEL`;
+  });
+}
+
+model3DScale.addEventListener("input", ()=>{
+  const v = parseFloat(model3DScale.value);
+  model3DScaleVal.textContent = v.toFixed(2);
+
+  if(uploadedModel3D){
+    uploadedModel3D.scale.setScalar(v);
+  }
+});
+
+model3DReset.addEventListener("click", ()=>{
+  model3DScale.value = "1";
+  model3DScaleVal.textContent = "1.00";
+
+  if(uploadedModel3D){
+    uploadedModel3D.position.set(0,3,0);
+    uploadedModel3D.rotation.set(0,0,0);
+    uploadedModel3D.scale.setScalar(1);
+  }
+});
+
+model3DDelete.addEventListener("click", ()=>{
+  if(!uploadedModel3D){
+    model3DStatus.textContent = "Tidak ada model 3D yang dipilih.";
+    return;
+  }
+
+  const target = uploadedModel3D;
+  const index = uploadedModels3D.indexOf(target);
+
+  disposeUploadedRoot(target);
+
+  if(index >= 0) uploadedModels3D.splice(index,1);
+
+  uploadedModel3D = uploadedModels3D.length ? uploadedModels3D[uploadedModels3D.length-1] : null;
+
+  if(uploadedModel3D){
+    selectUploadedModel(uploadedModel3D);
+    model3DStatus.textContent = `MODEL AKTIF • ${uploadedModel3D.name}`;
+  }else{
+    selectedObject = null;
+    infoBox.style.display = "none";
+    model3DStatus.textContent = "Model 3D dihapus.";
+  }
+
+  model3DFile.value = "";
+});
+
+// ==========================================================
+// VIDIOTRON 3D
+// ==========================================================
+// VIDEO TEXTURE / MASKED 3D SCREEN
+// ==========================================================
+const vidiotronFile = document.getElementById("vidiotronFile");
+const vidiotronShape = document.getElementById("vidiotronShape");
+const vidiotronAddBtn = document.getElementById("vidiotronAddBtn");
+const vidiotronSize = document.getElementById("vidiotronSize");
+const vidiotronX = document.getElementById("vidiotronX");
+const vidiotronY = document.getElementById("vidiotronY");
+const vidiotronZ = document.getElementById("vidiotronZ");
+const vidiotronRX = document.getElementById("vidiotronRX");
+const vidiotronRY = document.getElementById("vidiotronRY");
+const vidiotronRZ = document.getElementById("vidiotronRZ");
+const vidiotronOpacity = document.getElementById("vidiotronOpacity");
+const vidiotronStatus = document.getElementById("vidiotronStatus");
+
+const vidiotronValues = {
+  size: document.getElementById("vidiotronSizeVal"),
+  x: document.getElementById("vidiotronXVal"),
+  y: document.getElementById("vidiotronYVal"),
+  z: document.getElementById("vidiotronZVal"),
+  rx: document.getElementById("vidiotronRXVal"),
+  ry: document.getElementById("vidiotronRYVal"),
+  rz: document.getElementById("vidiotronRZVal"),
+  opacity: document.getElementById("vidiotronOpacityVal")
+};
+
+let vidiotron = null;
+let vidiotronVideo = null;
+let vidiotronTexture = null;
+let vidiotronMaterial = null;
+let vidiotronURL = null;
+
+const VIDIOTRON_VERTEX = `
+  varying vec2 vUv;
+  void main(){
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+  }
+`;
+
+const VIDIOTRON_FRAGMENT = `
+  uniform sampler2D uVideo;
+  uniform float uShape;
+  uniform float uOpacity;
+  uniform float uVideoAspect;
+  uniform float uPanelAspect;
+  uniform float uCropZoom;
+  uniform float uCropX;
+  uniform float uCropY;
+  varying vec2 vUv;
+
+  bool insidePolygon(vec2 p){
+    // Crown/W shape matching the reference image:
+    // three top peaks, two valleys, one bottom center point.
+    // 8 titik mengikuti bentuk pada referensi:
+    // kiri-lembah → puncak → lembah → puncak → lembah → puncak → kanan-lembah → ujung bawah.
+    vec2 pts[8];
+    pts[0] = vec2(0.08, 0.68);
+    pts[1] = vec2(0.24, 0.88);
+    pts[2] = vec2(0.38, 0.68);
+    pts[3] = vec2(0.50, 0.89);
+    pts[4] = vec2(0.64, 0.68);
+    pts[5] = vec2(0.82, 0.88);
+    pts[6] = vec2(0.94, 0.68);
+    pts[7] = vec2(0.50, 0.03);
+
+    bool inside = false;
+    for(int i=0, j=7; i<8; j=i++){
+      bool hit = ((pts[i].y > p.y) != (pts[j].y > p.y)) &&
+                 (p.x < (pts[j].x-pts[i].x) * (p.y-pts[i].y) /
+                 (pts[j].y-pts[i].y) + pts[i].x);
+      if(hit) inside = !inside;
+    }
+    return inside;
+  }
+
+  void main(){
+    vec2 p = vUv;
+    float alpha = 1.0;
+
+    if(uShape > 0.5 && uShape < 1.5){
+      // SQUARE
+      float m = min(min(p.x,1.0-p.x),min(p.y,1.0-p.y));
+      alpha = step(0.0,m);
+    } else if(uShape > 1.5 && uShape < 2.5){
+      // DIAMOND COMBO:
+      // Dua diamond lebih ramping di kiri/kanan + satu panel
+      // persegi panjang HORIZONTAL kecil di bawah, di tengah.
+      //
+      // Ukuran diamond diperkecil supaya tidak terlalu melebar.
+      // Diamond dibuat lebih ramping:
+      // skala X diperkecil supaya tidak melebar ke samping.
+      float leftDiamond =
+        step(abs((p.x-0.34) * 1.65) + abs(p.y-0.58), 0.20);
+
+      float rightDiamond =
+        step(abs((p.x-0.66) * 1.65) + abs(p.y-0.58), 0.20);
+
+      // Panel bawah dibuat horizontal, bukan kotak.
+      float centerPanel =
+        step(0.38, p.x) *
+        step(p.x, 0.62) *
+        step(0.12, p.y) *
+        step(p.y, 0.27);
+
+      alpha = max(max(leftDiamond, rightDiamond), centerPanel);
+    } else if(uShape > 2.5 && uShape < 3.5){
+      // CIRCLE
+      alpha = step(length(p-vec2(0.5)),0.5);
+    } else if(uShape > 3.5){
+      // W / CROWN
+      alpha = insidePolygon(p) ? 1.0 : 0.0;
+    }
+
+    if(alpha < 0.5) discard;
+
+    // Panel tetap landscape 16:9.
+    // Video memakai object-fit: cover: tidak gepeng, bagian yang
+    // keluar dari panel dipotong.
+    vec2 videoUV = p;
+    float va = max(uVideoAspect, 0.0001);
+    float pa = max(uPanelAspect, 0.0001);
+
+    if (va > pa) {
+      // Video lebih lebar dari panel -> crop kiri/kanan.
+      float visibleWidth = pa / va;
+      videoUV.x = (p.x - 0.5) * visibleWidth + 0.5;
+    } else {
+      // Video portrait/lebih tinggi -> crop atas/bawah.
+      float visibleHeight = va / pa;
+      videoUV.y = (p.y - 0.5) * visibleHeight + 0.5;
+    }
+
+    // Manual crop controls: zoom + X/Y pan.
+    float cropZoom = max(uCropZoom, 0.01);
+    videoUV = (videoUV - 0.5) / cropZoom + 0.5;
+    videoUV.x += uCropX * (1.0 / cropZoom);
+    videoUV.y += uCropY * (1.0 / cropZoom);
+
+    videoUV = clamp(videoUV, 0.0, 1.0);
+
+    vec4 videoColor = texture2D(uVideo, videoUV);
+    gl_FragColor = vec4(videoColor.rgb, videoColor.a * alpha * uOpacity);
+  }
+`;
+
+function vidiotronShapeCode(){
+  switch(vidiotronShape.value){
+    case "square": return 1.0;
+    case "diamond": return 2.0;
+    case "circle": return 3.0;
+    case "w": return 4.0;
+    default: return 0.0; // rectangle
+  }
+}
+
+function createVidiotronMaterial(){
+  return new THREE.ShaderMaterial({
+    uniforms:{
+      uVideo:{value:null},
+      uShape:{value:vidiotronShapeCode()},
+      uOpacity:{value:1},
+      uVideoAspect:{value:16/9},
+      uPanelAspect:{value:16/9}, uCropZoom:{value:1}, uCropX:{value:0}, uCropY:{value:0}
+    },
+    vertexShader:VIDIOTRON_VERTEX,
+    fragmentShader:VIDIOTRON_FRAGMENT,
+    transparent:true,
+    side:THREE.DoubleSide,
+    depthWrite:false,
+    depthTest:true
+  });
+}
+
+
+function updateVidiotronBody() {
+  if (!vidiotron) return;
+
+  const depth = 0.22;
+  const aspect = 16 / 9; // PANEL SELALU LANDSCAPE
+
+  if (vidiotronBack) {
+    vidiotron.remove(vidiotronBack);
+    vidiotronBack.geometry.dispose();
+    vidiotronBack.material.dispose();
+    vidiotronBack = null;
+  }
+
+  if (vidiotronFrame) {
+    vidiotron.remove(vidiotronFrame);
+    vidiotronFrame.geometry.dispose();
+    vidiotronFrame.material.dispose();
+    vidiotronFrame = null;
+  }
+
+  // Panel belakang gelap, bukan abu-abu.
+  const backMat = new THREE.MeshBasicMaterial({
+    color: 0x030306,
+    side: THREE.DoubleSide,
+    depthWrite: true
+  });
+
+  vidiotronBack = new THREE.Mesh(
+    new THREE.PlaneGeometry(aspect, 1),
+    backMat
+  );
+  vidiotronBack.position.z = -depth;
+  vidiotronBack.renderOrder = 10;
+  vidiotron.add(vidiotronBack);
+
+  // Frame/body tipis supaya layar terasa punya ketebalan 3D.
+  const frameMat = new THREE.MeshBasicMaterial({
+    color: 0x050507,
+    side: THREE.DoubleSide,
+    depthWrite: true
+  });
+
+  vidiotronFrame = new THREE.Mesh(
+    new THREE.BoxGeometry(aspect + 0.10, 1.10, depth),
+    frameMat
+  );
+  vidiotronFrame.position.z = -depth * 0.55;
+  vidiotronFrame.renderOrder = 5;
+  vidiotron.add(vidiotronFrame);
+
+  vidiotron.renderOrder = 20;
+}
+
+function createVidiotronMesh(){
+  if(vidiotron) return;
+
+  vidiotronMaterial = createVidiotronMaterial();
+
+  vidiotron = new THREE.Mesh(
+    new THREE.PlaneGeometry(1,1),
+    vidiotronMaterial
+  );
+
+  vidiotron.name = "VIDIOTRON_3D";
+  vidiotron.renderOrder = 20; // Vidiotron berada di bawah layer beam.
+  vidiotron.visible = false;
+  scene.add(vidiotron);
+}
+
+function rebuildVidiotronPlane(){
+  if(!vidiotron) createVidiotronMesh();
+
+  const aspect = 16 / 9; // video portrait tetap di-crop ke panel landscape
+
+  const oldGeo = vidiotron.geometry;
+  vidiotron.geometry = new THREE.PlaneGeometry(aspect,1);
+  oldGeo.dispose();
+
+  syncVidiotronControls();
+}
+
+function syncVidiotronControls(){
+  if(!vidiotron) return;
+
+  const size = parseFloat(vidiotronSize.value);
+  vidiotron.position.set(
+    parseFloat(vidiotronX.value),
+    parseFloat(vidiotronY.value),
+    parseFloat(vidiotronZ.value)
+  );
+  vidiotron.rotation.set(
+    THREE.MathUtils.degToRad(parseFloat(vidiotronRX.value)),
+    THREE.MathUtils.degToRad(parseFloat(vidiotronRY.value)),
+    THREE.MathUtils.degToRad(parseFloat(vidiotronRZ.value))
+  );
+  vidiotron.scale.set(size,size,size);
+
+  if(vidiotronMaterial){
+    vidiotronMaterial.uniforms.uOpacity.value =
+      parseFloat(vidiotronOpacity.value)/100;
+    vidiotronMaterial.uniforms.uShape.value = vidiotronShapeCode();
+  }
+
+  vidiotronValues.size.textContent = size.toFixed(1);
+  vidiotronValues.x.textContent = parseFloat(vidiotronX.value).toFixed(1);
+  vidiotronValues.y.textContent = parseFloat(vidiotronY.value).toFixed(1);
+  vidiotronValues.z.textContent = parseFloat(vidiotronZ.value).toFixed(1);
+  vidiotronValues.rx.textContent = `${vidiotronRX.value}°`;
+  vidiotronValues.ry.textContent = `${vidiotronRY.value}°`;
+  vidiotronValues.rz.textContent = `${vidiotronRZ.value}°`;
+  vidiotronValues.opacity.textContent = `${vidiotronOpacity.value}%`;
+}
+
+function showVidiotron(){
+  createVidiotronMesh();
+  vidiotron.visible = true;
+  selectedObject = vidiotron;
+  syncVidiotronControls();
+
+  infoBox.style.display = "block";
+  infoBox.innerHTML =
+    "Selected: <b>VIDIOTRON_3D</b><br>Video wall 3D aktif.";
+}
+
+vidiotronFile.addEventListener("change", () => {
+  const file = vidiotronFile.files && vidiotronFile.files[0];
+  if(!file) return;
+
+  if(vidiotronURL) URL.revokeObjectURL(vidiotronURL);
+
+  vidiotronURL = URL.createObjectURL(file);
+
+  if(vidiotronVideo){
+    vidiotronVideo.pause();
+    vidiotronVideo.removeAttribute("src");
+    vidiotronVideo.load();
+  }
+
+  vidiotronVideo = document.createElement("video");
+  vidiotronVideo.setAttribute("playsinline","");
+  vidiotronVideo.setAttribute("webkit-playsinline","");
+  vidiotronVideo.preload = "auto";
+  vidiotronVideo.loop = true;
+  vidiotronVideo.muted = true;
+  vidiotronVideo.autoplay = true;
+  vidiotronVideo.src = vidiotronURL;
+
+  vidiotronVideo.addEventListener("loadedmetadata",()=>{
+    createVidiotronMesh();
+    rebuildVidiotronPlane();
+
+    if(vidiotronTexture) vidiotronTexture.dispose();
+
+    vidiotronTexture = new THREE.VideoTexture(vidiotronVideo);
+    vidiotronTexture.minFilter = THREE.LinearFilter;
+    vidiotronTexture.magFilter = THREE.LinearFilter;
+    vidiotronTexture.generateMipmaps = false;
+    vidiotronTexture.format = THREE.RGBAFormat;
+    if("encoding" in vidiotronTexture)
+      vidiotronTexture.encoding = THREE.sRGBEncoding;
+
+    vidiotronMaterial.uniforms.uVideo.value = vidiotronTexture;
+    vidiotronMaterial.uniforms.uVideoAspect.value =
+      vidiotronVideo.videoWidth / Math.max(1, vidiotronVideo.videoHeight);
+    vidiotronMaterial.uniforms.uPanelAspect.value = 16 / 9;
+    vidiotronMaterial.needsUpdate = true;
+
+    showVidiotron();
+
+    const startPlayback = () => {
+      vidiotronVideo.play().then(()=>{
+        vidiotronStatus.textContent =
+          `VIDEO AKTIF • ${file.name} • ${vidiotronVideo.videoWidth}×${vidiotronVideo.videoHeight}`;
+      }).catch(()=>{
+        vidiotronStatus.textContent =
+          `VIDEO SIAP • tekan PLAY jika browser belum mengizinkan autoplay.`;
+      });
+    };
+
+    if(vidiotronVideo.readyState >= 3) startPlayback();
+    else vidiotronVideo.addEventListener("canplay",startPlayback,{once:true});
+  });
+
+  vidiotronVideo.addEventListener("error",()=>{
+    vidiotronStatus.textContent =
+      "Video gagal dibuka. Coba MP4 H.264 atau WebM yang kompatibel.";
+  });
+
+  // Mulai loading setelah src dipasang.
+  vidiotronVideo.load();
+});
+
+vidiotronAddBtn.addEventListener("click",()=>{
+  showVidiotron();
+  if(vidiotronVideo){
+    vidiotronVideo.play().catch(()=>{});
+  }else{
+    vidiotronStatus.textContent =
+      "Upload video terlebih dahulu.";
+  }
+});
+
+[
+  vidiotronSize,vidiotronX,vidiotronY,vidiotronZ,
+  vidiotronRX,vidiotronRY,vidiotronRZ,vidiotronOpacity
+].forEach(el=>el.addEventListener("input",syncVidiotronControls));
+
+vidiotronShape.addEventListener("change",()=>{
+  if(vidiotronMaterial)
+    vidiotronMaterial.uniforms.uShape.value = vidiotronShapeCode();
+  syncVidiotronControls();
+});
+
+document.getElementById("vidiotronPlay").addEventListener("click",()=>{
+  if(vidiotronVideo) vidiotronVideo.play().catch(()=>{});
+});
+
+document.getElementById("vidiotronPause").addEventListener("click",()=>{
+  if(vidiotronVideo) vidiotronVideo.pause();
+});
+
+document.getElementById("vidiotronRestart").addEventListener("click",()=>{
+  if(!vidiotronVideo) return;
+  vidiotronVideo.currentTime=0;
+  vidiotronVideo.play().catch(()=>{});
+});
+
+document.getElementById("vidiotronMute").addEventListener("click",(e)=>{
+  if(!vidiotronVideo) return;
+  vidiotronVideo.muted=!vidiotronVideo.muted;
+  e.currentTarget.textContent =
+    vidiotronVideo.muted ? "🔇 MUTE" : "🔊 SOUND";
+});
+
+document.getElementById("vidiotronDelete").addEventListener("click",()=>{
+  if(!vidiotron) return;
+  vidiotron.visible=false;
+  selectedObject=null;
+  if(vidiotronVideo) vidiotronVideo.pause();
+  infoBox.style.display="none";
+  vidiotronStatus.textContent="Vidiotron disembunyikan.";
+});
+
+// Tab MAIN MODE / EDITOR
+document.querySelectorAll(".console-tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    document.querySelectorAll(".console-tab").forEach(t=>t.classList.remove("active"));
+    document.querySelectorAll(".console-mode").forEach(m=>m.classList.remove("active"));
+
+    tab.classList.add("active");
+    const target=document.getElementById(tab.dataset.mode);
+    if(target) target.classList.add("active");
+  });
+});
+
+// === MAIN RENDER LOOP ===
+function animateSimulator() {
+  requestAnimationFrame(animateSimulator);
+
+  t += 0.02;
+  if(!paused) moveT += 0.02;
+
+  if(prismRotateActive && (beamMode === "linear" || beamMode === "circle")) {
+    prismRotateAngle += 0.018 * Math.max(0.2, parseFloat(document.getElementById("moveSpeed").value) / 10);
+  }
+
+  scene.fog.density = parseFloat(fogSlider.value) / 1200;
+
+  const count = parseInt(headCountSlider.value);
+  const parCount = parseInt(parCountSlider.value);
+  const barCount = parseInt(barCountSlider.value);
+  const martinCount = parseInt(martinCountSlider.value);
+  const fanCount = parseInt(fanCountSlider.value);
+  const currentHexColor = colorInput.value;
+  const globalBeamVolume = parseFloat(beamVolumeSlider.value) / 100;
+
+  // VideoTexture Three.js diperbarui otomatis oleh renderer.
+  if (vidiotron && vidiotron.visible && vidiotronMaterial) {
+    vidiotronMaterial.uniforms.uOpacity.value = parseFloat(vidiotronOpacity.value) / 100;
+    vidiotronMaterial.uniforms.uShape.value = vidiotronShapeCode();
+    if (vidiotronTexture && vidiotronVideo && vidiotronVideo.readyState >= 2) {
+      vidiotronTexture.needsUpdate = true;
+    }
+  }
+  const strSpeedVal = parseFloat(document.getElementById("strobeSpeed").value) / 10;
+
+  if(t - lastFxSwitchTime > 3.5) {
+    lastFxSwitchTime = t;
+    const currentIdx = stroboFxList.indexOf(stroboFxMode);
+    const nextIdx = (currentIdx + 1) % stroboFxList.length;
+    stroboFxMode = stroboFxList[nextIdx];
+  }
+
+  for(let p = 0; p < parCount; p++) {
+    const par = parLeds[p];
+    const autoHue = (t * 0.2 + p * 0.15) % 1.0;
+    const parColor = new THREE.Color().setHSL(autoHue, 1.0, 0.5);
+
+    if(!miniBruteActive) {
+      par.lensMat.color.copy(parColor);
+      par.lensMat.emissive.copy(parColor);
+      par.lensMat.emissiveIntensity = 8.0;
+
+      par.spotLight.color.copy(parColor);
+      par.spotLight.intensity = 30.0;
+
+      par.glowLight.color.copy(parColor);
+      par.glowLight.intensity = 12.0;
+    }
+  }
+
+  for(let i=0; i<count; i++) {
+    const head = movingHeads[i];
+    const isLit = strobeState(i) && !miniBruteActive;
+
+    head.yokeGroup.rotation.y = moveX(i);
+    head.headGroup.rotation.x = moveY(i);
+
+    if(isLit) {
+      head.lensMat.color.set(currentHexColor);
+
+      if(beamMode === "linear" || beamMode === "prisma") {
+        head.beamMeshes[0].rotation.set(0, -0.15, 0);
+        head.beamMeshes[1].rotation.set(0, -0.07, 0);
+        head.beamMeshes[2].rotation.set(0,  0.00, 0);
+        head.beamMeshes[3].rotation.set(0,  0.07, 0);
+        head.beamMeshes[4].rotation.set(0,  0.15, 0);
+        
+        head.beamMeshes.forEach(mesh => mesh.position.set(0, 0, 0.26));
+        head.beamsContainer.rotation.z = prismRotateAngle;
+
+        const beamColor = getBeamColor(i);
+        head.beamMaterials.forEach(m => {
+          m.color.copy(beamColor);
+          m.opacity = globalBeamVolume * 0.28;
+        });
+      } else if(beamMode === "circle") {
+        const radSpread = 0.12;
+        head.beamMeshes[0].position.set(0, 0, 0.26);
+        head.beamMeshes[0].rotation.set(0, 0, 0);
+
+        head.beamMeshes[1].position.set(0, 0, 0.26);
+        head.beamMeshes[1].rotation.set(-radSpread, 0, 0);
+
+        head.beamMeshes[2].position.set(0, 0, 0.26);
+        head.beamMeshes[2].rotation.set(radSpread, 0, 0);
+
+        head.beamMeshes[3].position.set(0, 0, 0.26);
+        head.beamMeshes[3].rotation.set(0, -radSpread, 0);
+
+        head.beamMeshes[4].position.set(0, 0, 0.26);
+        head.beamMeshes[4].rotation.set(0, radSpread, 0);
+        head.beamsContainer.rotation.z = prismRotateAngle;
+
+        const beamColor = getBeamColor(i);
+        head.beamMaterials.forEach(m => {
+          m.color.copy(beamColor);
+          m.opacity = globalBeamVolume * 0.28;
+        });
+      } else {
+        head.beamsContainer.rotation.z = 0;
+        head.beamMeshes.forEach((mesh, idx) => {
+          mesh.position.set(0, 0, 0.26); 
+          mesh.rotation.set(0, 0, 0);
+          if(idx === 0) {
+            head.beamMaterials[idx].color.copy(getBeamColor(i));
+            head.beamMaterials[idx].opacity = globalBeamVolume * 0.55;
+          } else { 
+            head.beamMaterials[idx].opacity = 0.0; 
+          }
+        });
+      }
+    } else {
+      head.beamsContainer.rotation.z = (beamMode === "linear" || beamMode === "circle") ? prismRotateAngle : 0;
+      head.lensMat.color.set(0x222222);
+      head.beamMaterials.forEach(m => m.opacity = 0.0);
+    }
+  }
+
+  const boxMode = Math.floor(t * 0.5 * strSpeedVal) % 15;
+
+  for(let m = 0; m < martinCount; m++) {
+    const martin = martinStrobes[m];
+    martin.leds.forEach(led => {
+      if(miniBruteActive) return;
+
+      let active = false;
+      const c = led.col;
+      const r = led.row;
+      const nx = c / (BOX_COLS - 1);
+      const ny = r / (BOX_ROWS - 1);
+
+      switch (boxMode) {
+        case 0: active = c <= (Math.floor(t * 15 * strSpeedVal) % BOX_COLS); break;
+        case 1: active = c >= BOX_COLS - 1 - (Math.floor(t * 15 * strSpeedVal) % BOX_COLS); break;
+        case 2: active = r === (Math.floor(t * 12 * strSpeedVal) % BOX_ROWS); break;
+        case 3: active = r === BOX_ROWS - 1 - (Math.floor(t * 12 * strSpeedVal) % BOX_ROWS); break;
+        case 4: active = Math.floor(t * 10 * strSpeedVal) % 2 === 0; break;
+        case 5: active = Math.random() > 0.7; break;
+        case 6: active = Math.sin(c * 0.6 - t * 8 * strSpeedVal) > 0.2; break;
+        case 7: active = Math.sin(c * 0.5 + r * 0.8 - t * 8 * strSpeedVal) > 0; break;
+        case 8: {
+          const wave = Math.sin((nx * 2.8 * Math.PI) - t * 4.5 * strSpeedVal + ny * 2.2 * Math.sin(t * 1.2));
+          active = wave > 0.25;
+          break;
+        }
+        case 9: {
+          const cx = BOX_COLS / 2, cy = BOX_ROWS / 2;
+          const dist = Math.hypot(c - cx, r - cy);
+          active = Math.sin(dist * 0.85 - t * 6 * strSpeedVal) > 0.35;
+          break;
+        }
+        case 10: {
+          const speed = 8 + Math.sin(t * 0.8) * 2;
+          const gate = Math.sin(nx * 10 + ny * 6 - t * speed * strSpeedVal);
+          const rnd = (Math.sin((c + 1) * 12.98 + (r + 1) * 78.23 + t * 2.1) * 43758.54) % 1;
+          active = gate > 0.55 && rnd > 0.7;
+          break;
+        }
+        case 11: {
+          let cx = BOX_COLS / 2, cy = BOX_ROWS / 2;
+          let dist = Math.hypot(c - cx, r - cy);
+          active = Math.sin(dist * 1.5 - t * 8 * strSpeedVal) > 0;
+          break;
+        }
+        case 12: {
+          let cx = BOX_COLS / 2, cy = BOX_ROWS / 2;
+          let dx = c - cx, dy = r - cy;
+          let ang = Math.atan2(dy, dx);
+          let dist = Math.hypot(dx, dy);
+          active = Math.sin(ang * 4 + dist - t * 8 * strSpeedVal) > 0;
+          break;
+        }
+        case 13: active = Math.random() > 0.92; break;
+        case 14: active = ((c + r + Math.floor(t * 12 * strSpeedVal)) % 8) < 4; break;
+      }
+
+      if (active) {
+        let rainbowHue = (c * 15 + r * 25 + t * 250 * strSpeedVal) % 360;
+        led.mat.color.setHSL(rainbowHue / 360, 1.0, 0.5);
+      } else {
+        led.mat.color.setHex(0x050505);
+      }
+    });
+  }
+
+  for(let b = 0; b < barCount; b++) {
+    const bar = stroboBars[b];
+    const totalSegsInBar = bar.segments.length;
+
+    for(let s = 0; s < totalSegsInBar; s++) {
+      const segMat = bar.segments[s];
+      const globalSegIndex = b * totalSegsInBar + s;
+      
+      let finalColor = new THREE.Color(0x000000);
+      let intensity = 0.0;
+
+      if(!miniBruteActive) {
+        switch(stroboFxMode) {
+          case "rainbow": {
+            const hue = (t * 0.5 * strSpeedVal + globalSegIndex * 0.03) % 1.0;
+            finalColor.setHSL(hue, 1.0, 0.5);
+            intensity = 2.5;
+            break;
+          }
+          case "chase": {
+            const step = Math.floor(t * 12 * strSpeedVal) % (barCount * totalSegsInBar);
+            if(globalSegIndex === step) {
+              finalColor.setHex(0x00ffff);
+              intensity = 3.5;
+            } else if((globalSegIndex + 1) % (barCount * totalSegsInBar) === step) {
+              finalColor.setHex(0xff00ff);
+              intensity = 1.5;
+            }
+            break;
+          }
+          case "alternate": {
+            const alt = (b + (Math.floor(t * 6 * strSpeedVal) % 2)) % 2 === 0;
+            if(alt) {
+              finalColor.setHex(0xff0055);
+              intensity = 3.0;
+            } else {
+              finalColor.setHex(0x00ffcc);
+              intensity = 3.0;
+            }
+            break;
+          }
+          case "strobe_white": {
+            const isFlash = Math.floor(t * 15 * strSpeedVal) % 2 === 0;
+            if(isFlash) {
+              finalColor.setHex(0xffffff);
+              intensity = 4.0;
+            }
+            break;
+          }
+          case "bounce": {
+            const cycle = Math.floor(t * 10 * strSpeedVal) % (barCount * 2 - 2 || 1);
+            const activeBar = cycle < barCount ? cycle : (barCount * 2 - 2 - cycle);
+            if(b === activeBar) {
+              const hue = (s * 0.25 + t) % 1.0;
+              finalColor.setHSL(hue, 1.0, 0.5);
+              intensity = 3.0;
+            }
+            break;
+          }
+          case "fire": {
+            const fireHue = 0.05 + Math.sin(t * 8 + globalSegIndex) * 0.04;
+            finalColor.setHSL(fireHue, 1.0, 0.5);
+            intensity = 1.5 + Math.random() * 1.5;
+            break;
+          }
+          case "scan_matrix": {
+            const scan = Math.sin(t * 6 * strSpeedVal + b * 0.5) > 0.2;
+            if(scan) {
+              finalColor.setHex(0x00ffaa);
+              intensity = 3.0;
+            }
+            break;
+          }
+          case "dual_split": {
+            const side = s < totalSegsInBar / 2;
+            const blink = Math.floor(t * 10 * strSpeedVal) % 2 === 0;
+            if(side ? blink : !blink) {
+              finalColor.setHex(0xffa500);
+              intensity = 3.5;
+            } else {
+              finalColor.setHex(0x00aaff);
+              intensity = 3.5;
+            }
+            break;
+          }
+          case "pulse_glow": {
+            const glow = (Math.sin(t * 5 * strSpeedVal + b * 0.3) + 1) / 2;
+            finalColor.setHSL(0.8, 1.0, 0.5);
+            intensity = glow * 3.5;
+            break;
+          }
+        }
+      }
+
+      if(intensity > 0) {
+        segMat.color.copy(finalColor);
+        segMat.emissive.copy(finalColor);
+        segMat.emissiveIntensity = intensity;
+      } else {
+        segMat.color.set(0x111111);
+        segMat.emissive.set(0x000000);
+        segMat.emissiveIntensity = 0.0;
+      }
+    }
+  }
+
+  // === FAN LIGHT RGB ANIMATION ===
+  const fanSpeed = parseFloat(fanSpeedSlider.value) / 10;
+  const fanBrightness = parseFloat(fanBrightnessSlider.value) / 100;
+
+  for(let f = 0; f < fanCount; f++) {
+    const fan = fanLights[f];
+    if(!fan.group.visible) continue;
+
+    if(fanRotateActive) {
+      fan.bladeGroup.rotation.z += 0.018 * fanSpeed;
+    }
+
+    const pulse = 0.72 + 0.28 * ((Math.sin(t * 4 * Math.max(0.2, fanSpeed)) + 1) / 2);
+
+    fan.blades.forEach((blade, b) => {
+      blade.leds.forEach((led, k) => {
+        let hue;
+        if(fanRgbMode) {
+          // Rainbow mengalir dari hub ke ujung dan antar-bilah.
+          hue = (t * 0.09 * Math.max(0.4, fanSpeed) + b / 6 + k / 55 + f * 0.08) % 1;
+        } else {
+          hue = (b / 6 + k / 70) % 1;
+        }
+        const c = new THREE.Color().setHSL(hue, 1.0, 0.5);
+        led.mat.color.copy(c);
+        led.mat.emissive.copy(c);
+        led.mat.emissiveIntensity = 3.2 * fanBrightness * pulse;
+      });
+    });
+
+    const frameHue = fanRgbMode ? (t * 0.06 * Math.max(0.4, fanSpeed) + f * 0.12) % 1 : 0.98;
+    const frameColor = new THREE.Color().setHSL(frameHue, 1.0, 0.5);
+    fan.ringMat.color.copy(frameColor);
+    fan.ringMat.emissive.copy(frameColor);
+    fan.ringMat.emissiveIntensity = 4.5 * fanBrightness * pulse;
+
+    const hubHue = fanRgbMode ? (t * 0.08 + 0.55 + f * 0.08) % 1 : 0.58;
+    const hubColor = new THREE.Color().setHSL(hubHue, 1.0, 0.6);
+    fan.hubLedMat.color.copy(hubColor);
+    fan.hubLedMat.emissive.copy(hubColor);
+    fan.hubLedMat.emissiveIntensity = 3.0 * fanBrightness * pulse;
+    fan.glow.color.copy(frameColor);
+    fan.glow.intensity = 7.0 * fanBrightness * pulse;
+  }
+
+  const miniTarget = miniBruteActive ? 1 : 0;
+  miniBruteIntensity += (miniTarget - miniBruteIntensity) * 0.25;
+
+  minibruteSpot.intensity = 45.0 * miniBruteIntensity;
+  minibruteGlow.intensity = 20.0 * miniBruteIntensity;
+  minibruteGlow.position.copy(minibruteGroup.position);
+  minibruteSpot.position.copy(minibruteGroup.position);
+  
+  blinders.forEach(lens => {
+    lens.material = miniBruteIntensity > 0.01 ? lensOnMat : lensOffMat;
+  });
+
+  movingHeads.forEach(head => {
+    if (head.masterGroup.visible && miniBruteIntensity > 0.01) head.lensMat.color.set(0x222222);
+  });
+
+  parLeds.forEach(par => {
+    if(par.group.visible && miniBruteIntensity > 0.01) {
+      par.lensMat.color.setHex(0xffffff);
+      par.lensMat.emissive.setHex(0xffffff);
+      par.lensMat.emissiveIntensity = 12.0 * miniBruteIntensity;
+      par.spotLight.color.setHex(0xffffff);
+      par.spotLight.intensity = 50.0 * miniBruteIntensity;
+      par.glowLight.color.setHex(0xffffff);
+      par.glowLight.intensity = 20.0 * miniBruteIntensity;
+    }
+  });
+
+  stroboBars.forEach(bar => {
+    if(bar.unitGroup.visible && miniBruteIntensity > 0.01) {
+      bar.segments.forEach(segMat => {
+        segMat.color.set(0xffffff);
+        segMat.emissive.set(0xffffff);
+        segMat.emissiveIntensity = 3.5 * miniBruteIntensity;
+      });
+    }
+  });
+
+  martinStrobes.forEach(m => {
+    if(m.group.visible && miniBruteIntensity > 0.01) {
+      m.leds.forEach(led => {
+        led.mat.color.setHex(0xffffff);
+      });
+    }
+  });
+
+  fanLights.forEach(fan => {
+    if(fan.group.visible && miniBruteIntensity > 0.01) {
+      fan.ringMat.color.setHex(0xffffff);
+      fan.ringMat.emissive.setHex(0xffffff);
+      fan.ringMat.emissiveIntensity = 5.0 * miniBruteIntensity;
+      fan.hubLedMat.color.setHex(0xffffff);
+      fan.hubLedMat.emissive.setHex(0xffffff);
+      fan.hubLedMat.emissiveIntensity = 4.0 * miniBruteIntensity;
+      fan.blades.forEach(blade => blade.leds.forEach(led => {
+        led.mat.color.setHex(0xffffff);
+        led.mat.emissive.setHex(0xffffff);
+        led.mat.emissiveIntensity = 4.0 * miniBruteIntensity;
+      }));
+    }
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+window.addEventListener("resize", () => {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+animateSimulator();
+
+document.addEventListener("keydown", (e) => {
+  const target = e.target;
+  const tag = target && target.tagName ? target.tagName.toLowerCase() : "";
+  if (tag === "input" || tag === "textarea" || tag === "select" ||
+      (target && target.isContentEditable)) return;
+
+  if(e.repeat) return;
+  switch(e.key.toLowerCase()){
+    case "f": moveMode="fan"; break;
+    case "v": moveMode="custom"; break;
+    case "d": moveMode="concert"; break;
+    case "w": moveMode="wave"; break;
+    case "p": moveMode="pargoy"; break;
+    case "c": moveMode="circle"; break;
+    case "z": moveMode="zigzag"; break;
+    case "s": moveMode="zigzag_ud"; break;
+    case "x": moveMode="crazy"; break;
+    case "i": moveMode="all_lr"; break;
+    case "u": moveMode="updown"; break;
+    case "a": moveMode="all_updown"; break;
+    case "n": moveMode="infinity"; break;
+    case "b": moveMode="babat"; break;
+    case "g": moveMode="babatlr"; break;
+    case "5": strobe="single_in"; break;
+     case "2": strobe="left_right"; break;
+    case "3": strobe="single"; break;
+    case "4": strobe="chase"; break;
+    case "0": strobe="off"; break;
+    case "8": beamMode="linear"; break;
+    case "7": beamMode="normal"; break;
+    case "6": beamMode="circle"; break;
+    case "9":
+      miniBruteActive = !miniBruteActive;
+      miniBtn.classList.toggle("active", miniBruteActive);
+      break;
+    case " ": paused=!paused; break;
+  }
+});
+</script>
+
+<!-- SCRIPT BACA LOGO DARI MANIFEST.JSON & LOGIKA INSTALL -->
+<script>
+let deferredPrompt = null;
+const customInstallBtn = document.getElementById("customInstallBtn");
+const installNoticeWrap = document.getElementById("installNoticeWrap");
+const closeInstallBtn = document.getElementById("closeInstallBtn");
+const iosNotice = document.getElementById("iosInstallNotice");
+
+function isAppInstalled(){
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.matchMedia("(display-mode: fullscreen)").matches ||
+         window.matchMedia("(display-mode: minimal-ui)").matches ||
+         window.navigator.standalone === true;
+}
+function hideInstallNotice(){ if(installNoticeWrap) installNoticeWrap.style.display="none"; }
+function showInstallNotice(){ if(!isAppInstalled() && installNoticeWrap) installNoticeWrap.style.display="flex"; }
+
+// Logo aplikasi dari manifest.json
+fetch("./manifest.json", {cache:"no-store"}).then(r=>r.json()).then(manifest=>{
+  const icon=(manifest.icons||[])[0];
+  const img=document.getElementById("appManifestLogo");
+  const fallback=document.querySelector(".anfLogoFallback");
+  if(icon && img){
+    img.onload=()=>{img.style.display="block";if(fallback)fallback.style.display="none";};
+    img.onerror=()=>{img.style.display="none";if(fallback)fallback.style.display="flex";};
+    img.src=new URL(icon.src,location.href).href;
+  }
+}).catch(()=>{});
+
+if(isAppInstalled()) hideInstallNotice();
+
+window.addEventListener("beforeinstallprompt", e=>{
+  if(isAppInstalled()){ e.preventDefault(); deferredPrompt=null; hideInstallNotice(); return; }
+  e.preventDefault(); deferredPrompt=e; showInstallNotice();
+});
+
+customInstallBtn?.addEventListener("click", async e=>{
+  e.preventDefault();
+  if(isAppInstalled()){ hideInstallNotice(); return; }
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  try{
+    const result=await deferredPrompt.userChoice;
+    if(result && result.outcome==="accepted") hideInstallNotice();
+  }catch(_){}
+  deferredPrompt=null;
+});
+
+closeInstallBtn?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();hideInstallNotice();deferredPrompt=null;});
+window.addEventListener("appinstalled",()=>{deferredPrompt=null;hideInstallNotice();if(iosNotice)iosNotice.style.display="none";});
+window.addEventListener("load",()=>{if(isAppInstalled())hideInstallNotice();});
+window.addEventListener("pageshow",()=>{if(isAppInstalled())hideInstallNotice();});
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",async()=>{
+    try{
+      const reg=await navigator.serviceWorker.register("./sw.js");
+      console.log("SW registered:",reg.scope);
+      navigator.serviceWorker.addEventListener("controllerchange",()=>location.reload());
+      setInterval(()=>reg.update(),30000);
+    }catch(e){console.log("SW Load Status:",e);}
+  });
+}
+
+// ===== VIDIOTRON CROP CONTROLS =====
+(function initVidiotronCropControls(){
+  const zoomEl = document.getElementById("vidCropZoom");
+  const xEl = document.getElementById("vidCropX");
+  const yEl = document.getElementById("vidCropY");
+  const resetEl = document.getElementById("vidCropReset");
+  const centerEl = document.getElementById("vidCropCenter");
+  const infoEl = document.getElementById("vidCropInfo");
+
+  if(!zoomEl || !xEl || !yEl) return;
+
+  function applyCrop(){
+    if(typeof vidiotronMaterial === "undefined" || !vidiotronMaterial) return;
+    if(!vidiotronMaterial.uniforms) return;
+
+    const z = parseFloat(zoomEl.value);
+const x = parseFloat(xEl.value);
+const y = parseFloat(yEl.value);
+
+// -2 = zoom out, 0 = normal, nilai positif = zoom in
+let shaderZoom;
+
+if (z < 0) {
+    // -2 = paling zoom out
+    // -1 = sedikit zoom out
+    //  0 = normal
+    shaderZoom = 1 / (1 + Math.abs(z) * 0.5);
+} else {
+    // 0 = normal
+    // nilai positif = zoom in
+    shaderZoom = 1 + z;
+}
+if(vidiotronMaterial.uniforms.uCropZoom)
+    vidiotronMaterial.uniforms.uCropZoom.value = shaderZoom;
+    if(vidiotronMaterial.uniforms.uCropX) vidiotronMaterial.uniforms.uCropX.value = x;
+    if(vidiotronMaterial.uniforms.uCropY) vidiotronMaterial.uniforms.uCropY.value = y;
+
+    if(infoEl) infoEl.textContent =
+      `Zoom ${z.toFixed(2)} • X ${x.toFixed(2)} • Y ${y.toFixed(2)}`;
+  }
+
+  [zoomEl,xEl,yEl].forEach(el => el.addEventListener("input", applyCrop));
+
+  resetEl?.addEventListener("click", ()=>{
+    zoomEl.value = "1";
+    xEl.value = "0";
+    yEl.value = "0";
+    applyCrop();
+  });
+
+  centerEl?.addEventListener("click", ()=>{
+    xEl.value = "0";
+    yEl.value = "0";
+    applyCrop();
+  });
+
+  // Re-apply after the video/material is created.
+  setTimeout(applyCrop, 100);
+})();
+</script>
+</body>
+</html>
